@@ -1,0 +1,125 @@
+light:
+  image_info:
+    image_size: [400, 400]
+    crop_tblr: [0, 0, 0, 0]
+    bayer_pattern: "Y"
+    image_type: "RAW10"
+    sub_black_level: True
+    black_level: 64
+  
+  relative_illumination:
+    sub_black_level: True
+    input_pattern: "Y"  
+    mask_radius: 200
+    roi_size: [10, 10]
+    snr_roi_size: [40, 40]
+    border_distance: 0
+    csv_output: true 
+    debug_flag: true
+  
+  optical_center:
+    sub_black_level: True
+    input_pattern: "Y"  
+    thresh: 0.9
+    csv_output: True 
+
+  defect_pixel_light:
+    sub_black_level: True
+    input_pattern: "Y"  
+    mask_radius: 200
+    roi_size: [11, 11]
+    thresh: 0.3
+    csv_output: True 
+    debug_flag: True
+
+  relative_uniformity:
+    sub_black_level: True
+    input_pattern: "Y"  
+    mask_radius: 200
+    roi_size: [10, 10]
+    border_distance: 0
+    delta_angle: 45
+    csv_output: True 
+    debug_flag: True
+
+  color_uniformity:
+    sub_black_level: True
+    input_pattern: "BGGR"  
+    image_count: 5
+    mask_radius: 1680
+    roi_size: [20, 20]
+    fov_rings: [0.1, 0.3, 0.5, 0.7, 0.9]
+    csv_output: True 
+    debug_flag: True
+
+sfr:
+  image_info:
+    image_size: [400, 400]
+    crop_tblr: [0, 0, 0, 0]
+    bayer_pattern: "Y"
+    image_type: "RAW10"
+    sub_black_level: false
+    black_level: 64
+    ny_freq: [4, 8]
+    
+  locate_block:
+    max_radius: 300
+    bw_mode: "FIX_THRESH"
+    bw_thresh: 0.2
+    mask_erode_size: [3, 3]
+    canny_thresh: [20, 30]
+    blur_size: [5, 5]
+    n_block: 8
+    block_thresh: [2000, 3000]
+    n_half_block: 4
+    half_block_thresh: [500, 1100] 
+    half_bloack_dist_from_center: [155, 179]
+    n_point: 5
+    point_thresh: [130, 180]
+    point_dist_from_center: [115, 125]
+    inner_block_thresh: [150, 200]
+    delta_angle: 25
+    roi_size: [24, 24]
+    debug_flag: false
+    text_size: 0.4
+    thickness: 1
+    x_offset: 3
+    y_offset: 10
+  
+  select_roi:
+    roi_inex: [10,7,0,13,
+              9,4,6,1,3,14,12,11,
+              23,22,16,19,29,28,26,25,
+              20,21,17,18,30,31,27,24,
+              42,39,32,45]
+  
+  mtf:
+    ny_freq: [2]
+    debug_flag: true
+    csv_output: true
+
+dark:
+  image_info:
+    image_size: [400, 400]
+    crop_tblr: [0, 0, 0, 0]
+    bayer_pattern: "Y"
+    image_type: "RAW10"
+    sub_black_level: false
+    black_level: 64
+
+  defect_pixel_dark:
+    image_count: 1
+    input_pattern: "Y"
+    sub_black_level: false
+    thresh: 140
+    roi_size: [16, 16]
+    csv_output: true 
+    debug_flag: true
+    
+
+  dark_noise:
+    image_count: 5
+    sub_black_level: false
+    csv_output: true 
+
+

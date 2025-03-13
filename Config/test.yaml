@@ -1,0 +1,127 @@
+light:
+  image_info:
+    image_size: [3024, 4032]
+    crop_tblr: [0, 0, 0, 0]
+    bayer_pattern: "RGGB"
+    image_type: "RAW10"
+    sub_black_level: True
+    black_level: 64
+  
+  relative_illumination:
+    sub_black_level: True
+    input_pattern: "Y"  
+    mask_radius: 2260
+    roi_size: [50, 50]
+    snr_roi_size: [100, 100]
+    border_distance: 0
+    csv_output: true 
+    debug_flag: true
+  
+#   optical_center:
+#     sub_black_level: True
+#     input_pattern: "Y"  
+#     thresh: 0.9
+#     csv_output: false 
+
+#   defect_pixel_light:
+#     sub_black_level: True
+#     input_pattern: "BGGR"  
+#     mask_radius: 1680
+#     roi_size: [31, 31]
+#     thresh: 0.3
+#     csv_output: false 
+#     debug_flag: false
+
+#   relative_uniformity:
+#     sub_black_level: True
+#     input_pattern: "Y"  
+#     mask_radius: 1680
+#     roi_size: [16, 16]
+#     border_distance: 0
+#     delta_angle: 45
+#     csv_output: false 
+#     debug_flag: false
+
+#   color_uniformity:
+#     sub_black_level: True
+#     input_pattern: "BGGR"  
+#     image_count: 5
+#     mask_radius: 1680
+#     roi_size: [20, 20]
+#     fov_rings: [0.1, 0.3, 0.5, 0.7, 0.9]
+#     csv_output: false 
+#     debug_flag: false
+
+# sfr:
+#   image_info:
+#     image_size: [3024, 3024]
+#     crop_tblr: [0, 0, 0, 0]
+#     bayer_pattern: "BGGR"
+#     image_type: "RAW10"
+#     sub_black_level: false
+#     black_level: 64
+#     ny_freq: [4, 8]
+    
+#   locate_block:
+#     max_radius: 2000
+#     bw_mode: "FIX_THRESH"
+#     bw_thresh: 0.2
+#     mask_erode_size: [15, 15]
+#     canny_thresh: [20, 30]
+#     blur_size: (5, 5)
+#     n_block: 37
+#     block_thresh: [10000, 25000]
+#     n_half_block: 0
+#     half_block_thresh: [0, 0] 
+#     half_bloack_dist_from_center: [0, 0]
+#     n_point: 4
+#     point_thresh: [600, 1100]
+#     point_dist_from_center: [1370, 1470]
+#     inner_block_thresh: [500, 1700]
+#     delta_angle: 15
+#     roi_size: [70, 70]
+#     debug_flag: true
+#     text_size: 1.4
+#     x_offset: 10
+#     y_offset: 30
+  
+#   select_roi:
+#     roi_inex: [2,1,0,3,
+#               4 , 7, 8,11,14,15,16,17,
+#               24,27,34,35,42,41,48,49,
+#               20,23,28,31,38,39,44,45,
+#               56,59,66,67,74,73,80,81,
+#               52,55,60,63,70,71,76,77,
+#               88,91,106,107,114,113,128,129,
+#               84,87,96,99,110,111,120,121,
+#               132,135,138,139,142,141,144,145]
+  
+#   mtf:
+#     ny_freq: [4]
+#     debug_flag: true
+
+# dark:
+#   image_info:
+#     image_size: [3024, 3024]
+#     crop_tblr: [0, 0, 0, 0]
+#     bayer_pattern: "BGGR"
+#     image_type: "RAW10"
+#     sub_black_level: false
+#     black_level: 64
+
+#   defect_pixel_dark:
+#     image_count: 5
+#     input_pattern: "BGGR"
+#     sub_black_level: false
+#     thresh: 112
+#     roi_size: [16, 16]
+#     csv_output: true 
+#     debug_flag: true
+    
+
+#   dark_noise:
+#     image_count: 5
+#     sub_black_level: false
+#     csv_output: true 
+
+
