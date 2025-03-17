@@ -1,7 +1,12 @@
 import numpy as np
+import sys
+from pathlib import Path
+ROOTPATH = Path(__file__).parent.parent
+sys.path.append(str(ROOTPATH))
 from Common import utils
 from pathlib import Path
 
+#region
 # 速度提升百分之50，但是初次运行需要编译
 # @njit
 # def compute_optical_center(image, gray_thresh):
@@ -51,7 +56,7 @@ from pathlib import Path
 
 #     # ✅ `@njit` 计算光学中心
 #     return compute_optical_center(image, gray_thresh)
-
+#endregion
 def optical_center(src_image, thresh=0.9, csv_output=False, save_path=None):
     save_path = Path(save_path)
     image = src_image.copy()
@@ -103,8 +108,8 @@ def func(file_name, save_path, config_path):
     return True
 
 if __name__ == '__main__':
-    file_name = r'G:\Script\image\california\Light.raw'
-    save_path = r'G:\Script\result'
-    config_path = r'G:\Script\Config\config_california.yaml'
+    file_name = r'G:\CameraTest\image\california\Light.raw'
+    save_path = r'G:\CameraTest\result'
+    config_path = r'G:\CameraTest\Config\config_california.yaml'
     func(file_name, save_path, config_path)
     print('OC finished!')

@@ -1,6 +1,9 @@
 import numpy as np
 from pathlib import Path
 import cv2
+import sys
+ROOTPATH = Path(__file__).parent.parent
+sys.path.append(str(ROOTPATH))
 from Common import utils
 
 def _debug_image(image, all_rect, all_value, local_delta, vec_ru_slop, ring_radius, local_avg, save_path):
@@ -214,9 +217,9 @@ def func(file_name, save_path, config_path):
     return True
 
 if __name__ == '__main__':
-    file_name = r'G:\Script\image\california\Light.raw'
-    save_path = r'G:\Script\result'
-    config_path = r'G:\Script\Config\config_california.yaml'
+    file_name = r'G:\CameraTest\image\california\Light.raw'
+    save_path = r'G:\CameraTest\result'
+    config_path = r'G:\CameraTest\Config\config_california.yaml'
     # import time 
     # for _ in range(10):
     #     start = time.time()

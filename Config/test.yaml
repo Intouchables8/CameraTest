@@ -65,6 +65,7 @@ light:
 #   locate_block:
 #     max_radius: 2000
 #     bw_mode: "FIX_THRESH"
+#     apply_hull: true
 #     bw_thresh: 0.2
 #     mask_erode_size: [15, 15]
 #     canny_thresh: [20, 30]

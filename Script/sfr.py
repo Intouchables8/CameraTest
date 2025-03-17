@@ -2,6 +2,9 @@ import numpy as np
 import cv2
 from pathlib import Path
 from enum import Enum
+import sys
+ROOTPATH = Path(__file__).parent.parent
+sys.path.append(str(ROOTPATH))
 from Common import utils, MTF3
 from Customize import sfr_funcion
 from Common.utils import *
@@ -29,6 +32,7 @@ class SFR:
         self.max_radius = locate_cfg.max_radius
         self.canny_thresh = locate_cfg.canny_thresh
         self.bw_thresh = locate_cfg.bw_thresh
+        self.apply_hull = locate_cfg.apply_hull
         self.mask_erode_size = locate_cfg.mask_erode_size
         self.blur_size = locate_cfg.blur_size
         self.n_block = locate_cfg.n_block
@@ -46,10 +50,12 @@ class SFR:
         self.thickness = locate_cfg.thickness
         self.x_offset = locate_cfg.x_offset
         self.y_offset = locate_cfg.y_offset
+        self.clockwise = locate_cfg.clockwise
 
         self.roi_index = roi_cfg.roi_inex
         self.ny_freq = mtf_cfg.ny_freq
         self.mtf_debug = mtf_cfg.debug_flag
+        self.text_value = mtf_cfg.text_value
         self.csv_output = mtf_cfg.csv_output
         
         self.rgb = None
@@ -105,8 +111,9 @@ class SFR:
     def _preprocess_image(self, image):
         if self.mtf_debug or self.debug_flag:
             self.rgb = utils.raw_2_rgb(image)
-        mask = utils.generate_mask(image.shape, self.max_radius)
-        image[mask == 0] = 0
+        if self.max_radius > 0:
+            mask = utils.generate_mask(image.shape, self.max_radius)
+            image[mask == 0] = 0
         if self.bw_mode == BinaryMode.CANNY:
             image = cv2.blur(image, self.blur_size, 0)
             canny = cv2.Canny(image, self.canny_thresh[0], self.canny_thresh[0])
@@ -135,18 +142,19 @@ class SFR:
                 utils.show_image(image, self.visual_scalse_factor)
                 # utils.show_image(bw_image, self.visual_scalse_factor)
             bw_image = bw_image.astype(np.uint8)
-            conts, _ = cv2.findContours(bw_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-            max_cont = max(conts, key = cv2.contourArea)  # key为指定函数， 面积函数
-            # 使用凸包 获得图像边缘位置 找到掩膜
-            hull = cv2.convexHull(max_cont)
-            mask_tmp = np.zeros_like(image, np.uint8)
-            mask_tmp = cv2.drawContours(mask_tmp, [hull], 0 , 255, -1)
             kernel = cv2.getStructuringElement(cv2.MORPH_RECT, self.mask_erode_size)
-            mask = cv2.erode(mask_tmp, kernel)  # 防止出现外围一圈白线
-            # if self.debug_flag:
-            #     utils.show_image(mask, self.visual_scalse_factor)
-            bw_image
-            bw_image[mask == 0] = 255
+            if self.apply_hull:
+                conts, _ = cv2.findContours(bw_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+                max_cont = max(conts, key = cv2.contourArea)  # key为指定函数， 面积函数
+                # 使用凸包 获得图像边缘位置 找到掩膜
+                hull = cv2.convexHull(max_cont)
+                mask_tmp = np.zeros_like(image, np.uint8)
+                mask_tmp = cv2.drawContours(mask_tmp, [hull], 0 , 255, -1)
+                mask = cv2.erode(mask_tmp, kernel)  # 防止出现外围一圈白线
+                # if self.debug_flag:
+                #     utils.show_image(mask, self.visual_scalse_factor)
+                bw_image[mask == 0] = 255
+            bw_image = cv2.dilate(bw_image, kernel)
             if self.debug_flag:
                 utils.show_image(~bw_image, self.visual_scalse_factor)
             bw_image = ~bw_image
@@ -257,7 +265,7 @@ class SFR:
                 cv2.putText(self.rgb, str(block_index), tuple((cur_inner_center).astype(np.uint16)),cv2.FONT_HERSHEY_SIMPLEX, self.text_size, (0, 0, 255), self.thickness)
         return cur_roi_center_xy, cur_block_corner_xy, cur_inner_center
 
-    def _get_roi_rect(self, bw_image, all_roi_center):
+    def get_roi_rect(self, bw_image, all_roi_center):
         test_size = 20
         n_roi = len(all_roi_center)
         all_rect = np.zeros((n_roi, 4), dtype=np.uint16)
@@ -286,20 +294,63 @@ class SFR:
                 all_rect[i, :] = [x_start, y_start, self.long_side, self.short_side]
         return all_rect
 
-    def _select_roi(self, blocks, roi_index):
+    def select_roi(self, blocks, roi_index):
         points_1d = np.concatenate(blocks)
         all_roi_center = points_1d[roi_index]
         return all_roi_center
 
     def _debug_image(self, all_rect, value, save_path):
+        if 4 in self.ny_freq:
+            index = self.ny_freq.index(4)
+        else:
+            index = 0
         value = 100 * value
+        
         for i, rect in enumerate(all_rect):
-            text = f'R{i+1}:{value[i][0]:.1f}'
+            text = f'R{i+1}:{value[i][index]:.1f}' if self.text_value else f'R_{i+1}'
             utils.draw_rect_with_text(self.rgb, rect[0], rect[1], rect[2], rect[3], text, text_size=self.text_size, text_thickness=self.thickness, rect_thickness=self.thickness, text_offset_x=self.x_offset, text_offset_y=self.y_offset)
         save_image_path = save_path / (utils.GlobalConfig.get_device_id() + '_sfr.png')
         cv2.imwrite(save_image_path, self.rgb)
 
-    def _localte_block_california(self, image, save_path):
+    @staticmethod
+    def _group_and_sort_indices(points, y_threshold=50):
+        """
+        按照 y 坐标进行分组，并在每一行内部按照 x 坐标从小到大排序，返回点的索引
+        :param points: 一个包含 (x, y) 坐标的列表
+        :param y_threshold: 用于确定 y 坐标误差范围（默认50像素）
+        :return: 按行分组并排序后的索引列表
+        """
+        # 获取带索引的点 (index, (x, y))
+        indexed_points = list(enumerate(points))
+        
+        # 按 y 坐标排序
+        indexed_points.sort(key=lambda p: p[1][1])  # 根据 y 坐标排序
+        
+        # 存储分组后的索引
+        grouped_indices = []
+        
+        # 初始化第一行
+        current_row = [indexed_points[0]]
+        
+        for i in range(1, len(indexed_points)):
+            index, (x, y) = indexed_points[i]
+            last_index, (_, last_y) = current_row[-1]  # 取当前行的最后一个点
+            
+            # 如果 y 坐标与上一点的 y 差值小于阈值，则视为同一行
+            if abs(y - last_y) <= y_threshold:
+                current_row.append((index, (x, y)))
+            else:
+                # 按 x 坐标排序后，提取索引并保存
+                grouped_indices.append([idx for idx, _ in sorted(current_row, key=lambda p: p[1][0])])
+                current_row = [(index, (x, y))]  # 开始新的行
+        
+        # 处理最后一行
+        if current_row:
+            grouped_indices.append([idx for idx, _ in sorted(current_row, key=lambda p: p[1][0])])
+        
+        return grouped_indices
+
+    def localte_block_california(self, image, save_path):
         '''
         图像中心存在block， 所有block完整且不连接
         '''
@@ -322,7 +373,7 @@ class SFR:
         block_centroid = []
         for cur_group_index in group_index:
             cur_centroid = valid_centroid[cur_group_index]
-            cur_sorted_index = utils.sort_order_index(cur_centroid, center_xy, self.delta_angle)
+            cur_sorted_index = utils.sort_order_index(cur_centroid, center_xy, self.delta_angle, self.clockwise)
             group_sorted_index.append(cur_group_index[cur_sorted_index])
             block_centroid.append(valid_centroid[cur_group_index[cur_sorted_index]])
             
@@ -334,16 +385,44 @@ class SFR:
         if self.n_point > 0:
             chart_center_xy = block_centroid[0][0]
             _, centroid =self. _find_connected_area(bw_image, self.point_thresh, 'Point')
-            points_xy = sfr_funcion.select_point_california(centroid, chart_center_xy, self.n_point, self.point_dist_from_center, self.debug_flag)
+            points_xy = sfr_funcion.select_point_california(centroid, chart_center_xy, self.n_point, self.point_dist_from_center, self.clockwise, self.debug_flag)
         
         # ROI 中心示意图， 用于后续选择ROI
         if self.debug_flag:
             self._visualize_all_points(block_roi_center_xy, points_xy, save_path)
         return block_roi_center_xy, block_centroid, inner_block_center_xy, points_xy
 
+    def localte_block_rgb(self, image, save_path):
+        '''
+        图像按照行列均匀排列
+        '''
+        image_size = image.shape
+        center_xy = (image_size[1] // 2, image_size[0] // 2)
+        # 预处理
+        bw_image = self._preprocess_image(image)
+        
+        # 获取bbox 和 质心
+        block_stats, valid_centroid = self._find_connected_area(bw_image, self.block_thresh, 'Block', self.n_block)
+        
+        group_index = SFR._group_and_sort_indices(valid_centroid, image_size[0] // 15)
+        index = []
+        for cur_group_index in group_index:
+            index.extend(cur_group_index)
+        block_centroid = valid_centroid[index]
+
+        # 定位所有block相关坐标
+        block_corner__xy, block_roi_center_xy, inner_block_center_xy = self._locate_all_block(image, block_stats, index, self.n_block, self.long_side)
+        
+
+        # ROI 中心示意图， 用于后续选择ROI
+        points_xy = None
+        if self.debug_flag:
+            self._visualize_all_points(block_roi_center_xy, points_xy, save_path)
+        return block_roi_center_xy, block_centroid, inner_block_center_xy, points_xy
+
     def _locate_block_cv(self, image, save_path):
         '''
-        图像中心存在block
+        图像中心存在block, block之间有连接
         '''
         image_size = image.shape
         center_xy = (image_size[1] // 2, image_size[0] // 2)
@@ -356,7 +435,7 @@ class SFR:
             _, centroid =self. _find_connected_area(bw_image, self.point_thresh, 'Point')
             index = np.argmin(utils.calcu_distance(centroid, center_xy))
             chart_center_xy = centroid[index]
-            points_xy = sfr_funcion.select_point_cv(centroid, chart_center_xy, self.n_point, self.point_dist_from_center, self.debug_flag)
+            points_xy = sfr_funcion.select_point_cv(centroid, chart_center_xy, self.n_point, self.point_dist_from_center, self.clockwise, self.debug_flag)
         
         # 获取bbox 和 质心
         block_stats, valid_centroid = self._find_connected_area(bw_image, self.block_thresh, 'Block', self.n_block)
@@ -372,17 +451,17 @@ class SFR:
         block_centroid = []
         for cur_group_index in group_index:
             cur_centroid = valid_centroid[cur_group_index]
-            cur_sorted_index = utils.sort_order_index(cur_centroid, center_xy, self.delta_angle)
+            cur_sorted_index = utils.sort_order_index(cur_centroid, center_xy, self.delta_angle, self.clockwise)
             group_sorted_index.append(cur_group_index[cur_sorted_index])
             block_centroid.append(valid_centroid[cur_group_index[cur_sorted_index]])
             
         # 定位所有block相关坐标
         block_corner_xy, block_roi_center_xy, inner_block_center_xy = self._locate_all_block(image, block_stats, group_sorted_index, self.n_block, self.long_side)
-    
+
         # 计算half
         half_block_stats, half_centroid = self._find_connected_area(bw_image, self.half_block_thresh, 'Half Block')
         half_block_stats, half_centroid = self._select_half_block_dist(half_block_stats, half_centroid, chart_center_xy, self.half_bloack_dist_from_center, self.n_half_block)
-        sorted_index = utils.sort_order_index(half_centroid, center_xy, self.delta_angle)
+        sorted_index = utils.sort_order_index(half_centroid, center_xy, self.delta_angle, self.clockwise)
         half_block_corner_xy, half_block_roi_center_xy, half_inner_block_center_xy = self._locate_all_block(image, half_block_stats, sorted_index, self.n_half_block, 0)
 
         block_roi_center_xy.extend(half_block_roi_center_xy)
@@ -390,36 +469,15 @@ class SFR:
         # ROI 中心示意图， 用于后续选择ROI
         if self.debug_flag:
             self._visualize_all_points(block_roi_center_xy, points_xy, save_path)
-        return block_roi_center_xy, block_centroid, inner_block_center_xy, centroid
+        
+        return block_roi_center_xy, block_centroid, inner_block_center_xy, _
     
-    @time_it_avg(10)
-    def func(self, file_name, save_path):
+    def calcu_mtf(self, image, all_roi_rect, save_path):
         save_path = Path(save_path)
-        image = utils.load_image(file_name, self.image_tpye, self.image_size, self.crop_tblr)
-        if self.sub_black_level:
-            image = utils.sub_black_level(image, self.black_level)
-        
-        if self.bayer_pattern != 'Y':
-            image = utils.bayer_2_y(image, self.bayer_pattern)
-        
-        if image.dtype == np.uint16:
-            image = (image >> 2).astype(np.uint8)
-        
-        # 定位block
-        block_roi_center_xy, block_centroid, inner_block_center_xy, points_xy = self._localte_block_california(image, save_path)
-        # block_roi_center_xy, block_centroid, inner_block_center_xy, points_xy = self._locate_block_cv(image, save_path)
-        
-        # 选择roi
-        all_roi_center_xy = self._select_roi(block_roi_center_xy, self.roi_index)
-        
-        # 创建rect
-        all_roi_rect = self._get_roi_rect(image, all_roi_center_xy)
-        
-        # 计算mtf
         mtf_data = self.mtf.run(image, all_roi_rect)
         if self.csv_output:
-            data = []
-            name = []
+            data = [utils.GlobalConfig.get_device_id(),]
+            name = ['Device ID',]
             for i, mtf in enumerate(mtf_data):
                 name.extend([f"ROI{i+1}_Ny_{num}" for num in self.ny_freq])
                 data.extend([str(100*value) for value in mtf])        
@@ -429,11 +487,41 @@ class SFR:
         # 可视化
         if self.mtf_debug:
             self._debug_image(all_roi_rect, mtf_data, save_path)
+        return mtf_data
+    
+#region    
+# @time_it_avg(10)
+def func(self, file_name, save_path):
+    save_path = Path(save_path)
+    image = utils.load_image(file_name, self.image_tpye, self.image_size, self.crop_tblr)
+    if self.sub_black_level:
+        image = utils.sub_black_level(image, self.black_level)
+    
+    if self.bayer_pattern != 'Y':
+        image = utils.bayer_2_y(image, self.bayer_pattern)
+    
+    if image.dtype == np.uint16:
+        image = (image >> 2).astype(np.uint8)
+    
+    # 定位block
+    block_roi_center_xy, block_centroid, inner_block_center_xy, points_xy = self.localte_block_california(image, save_path)
+    # block_roi_center_xy, block_centroid, inner_block_center_xy, points_xy = self.locate_block_cv(image, save_path)
+    
+    # 选择roi
+    all_roi_center_xy = self.select_roi(block_roi_center_xy, self.roi_index)
+    
+    # 创建rect
+    all_roi_rect = self.get_roi_rect(image, all_roi_center_xy)
+        
+    # 计算mtf
+    self.calcu_mtf(image, all_roi_rect)
+        
         
 if __name__ == '__main__':
-    file_name = r'G:\Script\image\ET\sfr.raw'
-    save_path = r'G:\Script\result'
-    config_path = r'G:\Script\Config\config_et.yaml'
+    file_name = r'G:\CameraTest\image\ET\sfr.raw'
+    save_path = r'G:\CameraTest\result'
+    config_path = r'G:\CameraTest\Config\config_et.yaml'
     sfr = SFR(config_path, 1)
     utils.process_file_or_folder(file_name, '.raw', sfr.func, save_path)
     print('sfr finished!') 
+#endregion

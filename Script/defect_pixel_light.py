@@ -1,6 +1,9 @@
 import numpy as np
 import cv2
 from pathlib import Path
+import sys
+ROOTPATH = Path(__file__).parent.parent
+sys.path.append(str(ROOTPATH))
 from Common import utils
 from concurrent.futures import ThreadPoolExecutor
 
@@ -47,7 +50,8 @@ def _debug_image(image, ind_dpl, avg_image, diff_image, diff_image_pre, channel_
     #         com_defect_pixel = [filtered_df['Y'].tolist(), filtered_df['X'].tolist()]
     #     writeLog(com_defect_pixel, save_file_path)
 
-def _dpl_support(image, channel_name, roi_size, thresh, mask_radius, debug_flag, save_path):
+def _dpl_support(src, channel_name, roi_size, thresh, mask_radius, debug_flag, save_path):
+    image = src.copy()
     total_dpl = 0
     singlet_dpl = 0
     doublet_dplt = 0
@@ -81,7 +85,8 @@ def _dpl_support(image, channel_name, roi_size, thresh, mask_radius, debug_flag,
             triplet_dpl = int((areas >= 3).sum())
         
         if debug_flag:
-            _debug_image(image, ind_dpl, avg_image, diff_image, diff_image_pre, channel_name, save_path) 
+            if len(ind_dpl[0]) > 0:
+                _debug_image(image, ind_dpl, avg_image, diff_image, diff_image_pre, channel_name, save_path) 
     return total_dpl, singlet_dpl, doublet_dplt, triplet_dpl
 
 def defect_pixel_light(image, bayer_pattern, roi_size, mask_radius, thresh, csv_output, debug_flag=False, save_path=None, multi_thread=True):
@@ -151,7 +156,7 @@ def defect_pixel_light(image, bayer_pattern, roi_size, mask_radius, thresh, csv_
                     'DPL_Total_Area_RBGrGbSum': str(b_total_dpl + gb_total_dpl + gr_total_dpl + r_total_dpl)
         }
     else:
-        total_dpl, singlet_dpl, doublet_dpl, triplet_dpl = _dpl_support(image, 'Gray', roi_size, thresh, mask_radius, debug_flag, save_path)
+        total_dpl, singlet_dpl, doublet_dpl, triplet_dpl = _dpl_support(image, 'Y', roi_size, thresh, mask_radius, debug_flag, save_path)
         dpl_data = {
             'DPL Contrast Threshold': str(100 * thresh),
             'DPL_Singlet_count': str(singlet_dpl),
@@ -181,9 +186,9 @@ def func(file_name, save_path, config_path):
     return True
 
 if __name__ == '__main__':
-    file_name = r'G:\Script\image\california\Light.raw'
-    save_path = r'G:\Script\result'
-    config_path = r'G:\Script\Config\config_california.yaml'
+    file_name = r'G:\CameraTest\image\california\Light.raw'
+    save_path = r'G:\CameraTest\result'
+    config_path = r'G:\CameraTest\Config\config_california.yaml'
     func(file_name, save_path, config_path)
     
     print('dpl finished!')

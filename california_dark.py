@@ -1,5 +1,5 @@
-from dark_noise import dark_noise
-from defect_pixel_dark import defect_pixel_dark
+from Script.dark_noise import dark_noise
+from Script.defect_pixel_dark import defect_pixel_dark
 from Common import utils
 import numpy as np
 from Common.utils import *
@@ -37,10 +37,10 @@ class Dark:
             
 
 if __name__ == '__main__':
-    dpd_file_name = r'G:\Script\image\california\Dark\dpd\California_P0_DARK_1_2_Dark16X_352RK1AFBV00K5_3660681a28230823610100_20231226_122724_0.raw'
-    dn_file_name = r'G:\Script\image\california\Dark\noise\California_P0_DARK_1_2_Dark16X_352RK1AFBV00K5_3660681a28230823610100_20231226_122724_0.raw'
-    save_path = r'G:\Script\result'
-    config_path = r'G:\Script\Config\config_california.yaml'
+    dpd_file_name = r'G:\CameraTest\image\california\Dark\dpd\California_P0_DARK_1_2_Dark16X_352RK1AFBV00K5_3660681a28230823610100_20231226_122724_0.raw'
+    dn_file_name = r'G:\CameraTest\image\california\Dark\noise\California_P0_DARK_1_2_Dark16X_352RK1AFBV00K5_3660681a28230823610100_20231226_122724_0.raw'
+    save_path = r'G:\CameraTest\result'
+    config_path = r'G:\CameraTest\Config\config_california.yaml'
     dark = Dark(config_path)
     dark.func(dpd_file_name, dn_file_name, save_path)
     print('dark finished!') 

@@ -1,8 +1,8 @@
 light:
   image_info:
-    image_size: [3024, 3024]
+    image_size: [1808, 2888]
     crop_tblr: [0, 0, 0, 0]
-    bayer_pattern: "BGGR"
+    bayer_pattern: "BGGR"  
     image_type: "RAW10"
     sub_black_level: True
     black_level: 64
@@ -10,62 +10,74 @@ light:
   relative_illumination:
     sub_black_level: True
     input_pattern: "Y"  
-    mask_radius: 1680
+    mask_radius: 1697
     roi_size: [32, 32]
     snr_roi_size: [100, 100]
-    border_distance: 0
-    csv_output: false 
-    debug_flag: false
+    border_distance: 8
+    csv_output: true 
+    debug_flag: true
   
   optical_center:
     sub_black_level: True
     input_pattern: "Y"  
-    thresh: 0.9
-    csv_output: false 
+    thresh: 0.1
+    csv_output: true 
 
   defect_pixel_light:
     sub_black_level: True
-    input_pattern: "BGGR"  
-    mask_radius: 1680
+    input_pattern: "Y"  
+    mask_radius: 1697
     roi_size: [31, 31]
-    thresh: 0.1
-    csv_output: false 
-    debug_flag: false
+    thresh: 0.3
+    csv_output: true 
+    debug_flag: true
+  
+  defect_row_col_light:
+    sub_black_level: True
+    input_pattern: "Y"  
+    mask_radius: 1697
+    thresh: 2
+    neighbor: 0  
+    min_pixel: 10
+    csv_output: true 
+    debug_flag: true
 
   relative_uniformity:
     sub_black_level: True
     input_pattern: "Y"  
-    mask_radius: 1680
+    mask_radius: 1697
     roi_size: [16, 16]
     border_distance: 0
     delta_angle: 45
-    csv_output: false 
-    debug_flag: false
+    csv_output: true 
+    debug_flag: true
 
   color_uniformity:
     sub_black_level: True
     input_pattern: "BGGR"  
     image_count: 5
-    mask_radius: 1680
+    mask_radius: 1697
     roi_size: [20, 20]
     fov_rings: [0.1, 0.3, 0.5, 0.7, 0.9]
-    csv_output: false 
-    debug_flag: false
+    calcu_delta_c: true  
+    calcu_old_cu: true  
+    csv_output: true 
+    debug_flag: true
 
   blemish:
-    image_size: [3024, 3024]
+    image_size: [1808, 2888]
     down_scale_factor: 2  
-    kernel_size: [55, 55]  
+    kernel_size: [25, 25]  
     morph: False
     morph_kern: [0, 0]
     poly_degree: 6
     side_mask: 20          
-    mask_radius: 1680    
+    mask_radius: 1697    
     denoise_sigma: 5       
     threshold_m: 4
-    threshold_n:  0
+    threshold_n: 1
     threshold_min_max: [2, 8]   
-    min_area: 15
+    min_area: 1
     input_pattern: "Y"
     seg_dir: 1
     sub_black_level: True
@@ -75,57 +87,57 @@ light:
 
 sfr:
   image_info:
-    image_size: [3024, 3024]
+    image_size: [1808, 2888]
     crop_tblr: [0, 0, 0, 0]
     bayer_pattern: "BGGR"
     image_type: "RAW10"
     sub_black_level: false
     black_level: 64
-    ny_freq: [4, 8]
+    ny_freq: [4]
     
   locate_block:
-    max_radius: 2000
+    max_radius: 0
     bw_mode: "FIX_THRESH"
+    apply_hull: false
     bw_thresh: 0.2
-    mask_erode_size: [15, 15]
+    mask_erode_size: [3, 3]
     canny_thresh: [20, 30]
     blur_size: (5, 5)
-    n_block: 37
-    block_thresh: [10000, 25000]
+    n_block: 117
+    block_thresh: [16500, 22500]
     n_half_block: 0
     half_block_thresh: [0, 0] 
     half_bloack_dist_from_center: [0, 0]
-    n_point: 4
-    point_thresh: [600, 1100]
-    point_dist_from_center: [1370, 1470]
-    inner_block_thresh: [500, 1700]
+    n_point: 0
+    point_thresh: [0, 0]
+    point_dist_from_center: [0, 0]
+    inner_block_thresh: [200, 300]
     delta_angle: 15
     roi_size: [70, 70]
-    debug_flag: true
+    debug_flag: false
+    clockwise: false
     text_size: 1.4
     thickness: 2
     x_offset: 10
-    y_offset: 30
+    y_offset: 35
   
   select_roi:
-    roi_inex: [2,1,0,3,
-              4 , 7, 8,11,14,15,16,17,
-              24,27,34,35,42,41,48,49,
-              20,23,28,31,38,39,44,45,
-              56,59,66,67,74,73,80,81,
-              52,55,60,63,70,71,76,77,
-              88,91,106,107,114,113,128,129,
-              84,87,96,99,110,111,120,121,
-              132,135,138,139,142,141,144,145]
+    roi_inex: [234,233,232,235,
+              178,179,184,187,288,289,281,282,
+              116,119,142,143,350,349,324,325,222,77,244,391,
+              166,165,60,63,94,95,196,197,300,303,406,405,372,373,270,271,18,38,448,434,
+              58,57,96,97,408,411,370,371
+              ]
   
   mtf:
     ny_freq: [4]
-    debug_flag: false
-    csv_output: true
+    debug_flag: true
+    text_value: true
+    csv_output: false
 
 dark:
   image_info:
-    image_size: [3024, 3024]
+    image_size: [1808, 2888]
     crop_tblr: [0, 0, 0, 0]
     bayer_pattern: "BGGR"
     image_type: "RAW10"
@@ -133,11 +145,27 @@ dark:
     black_level: 64
 
   defect_pixel_dark:
-    image_count: 5
-    input_pattern: "BGGR"
+    image_count: 1
+    input_pattern: "Y"
     sub_black_level: false
-    thresh: 112
-    roi_size: [16, 16]
+    thresh: 140
+    csv_output: true 
+    debug_flag: true
+    distribution: false
+  
+  DSNU:
+    roi_size: [8, 8]
+    image_count: 5
+    except_dpd: false
+    csv_output: true 
+    debug_flag: true
+    
+  defect_row_col_dark:
+    image_count: 1
+    input_pattern: "Y"
+    sub_black_level: false
+    thresh: 2
+    neighbor: 0
     csv_output: true 
     debug_flag: true
     

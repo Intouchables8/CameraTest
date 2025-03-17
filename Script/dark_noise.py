@@ -1,4 +1,8 @@
 import numpy as np
+import sys
+from pathlib import Path
+ROOTPATH = Path(__file__).parent.parent
+sys.path.append(str(ROOTPATH))
 from Common import utils
 from pathlib import Path
 def dark_noise(images, csv_output, save_path):
@@ -82,7 +86,7 @@ def func(file_name, save_path, config_path):
 if __name__ == '__main__':
     file_name = r'E:\Wrok\Temp\CaliforniaFATP\20250312\20250311\offline\holder_1\356YW33GB6001T\20250311171830\Dark\noise\camera\result\frame_9.raw'
     save_path = r'E:\Wrok\Temp\CaliforniaFATP\20250312\20250311\offline\holder_1\356YW33GB6001T\20250311171830\Dark\noise\camera\result'
-    config_path = r'G:\Script\Config\config_california.yaml'
+    config_path = r'G:\CameraTest\Config\config_california.yaml'
     import time 
     start = time.time()
     func(file_name, save_path, config_path)

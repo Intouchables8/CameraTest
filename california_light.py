@@ -1,9 +1,9 @@
 from Common import utils
-from relative_illumination import relative_illumination
-from optical_center import optical_center
-from defect_pixel_light import defect_pixel_light
-from relative_uniformity import relative_uniformity
-from color_uniformity import color_uniformity
+from Script.relative_illumination import relative_illumination
+from Script.optical_center import optical_center
+from Script.defect_pixel_light import defect_pixel_light
+from Script.relative_uniformity import relative_uniformity
+from Script.color_uniformity import color_uniformity
 import numpy as np
 from Common.utils import *
 
@@ -64,10 +64,10 @@ class Light:
         
 
 if __name__ == '__main__':
-    file_name = r'G:\Script\image\california\Light.raw'
-    cu_path = r'G:\Script\image\california\CU\California_P0_DARK_1_2_Light_352RK1AFBV004K_3660681a28230914610100_20231226_161547_0.raw'
-    save_path = r'G:\Script\result'
-    config_path = r'G:\Script\Config\config_california.yaml'
+    file_name = r'G:\CameraTest\image\california\Light.raw'
+    cu_path = r'G:\CameraTest\image\california\CU\California_P0_DARK_1_2_Light_352RK1AFBV004K_3660681a28230914610100_20231226_161547_0.raw'
+    save_path = r'G:\CameraTest\result'
+    config_path = r'G:\CameraTest\Config\config_california.yaml'
     light = Light(config_path)
     light.func(file_name, cu_path, save_path)
 

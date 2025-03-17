@@ -1,13 +1,18 @@
-from pathlib import Path
 import os
 import numpy as np
 from dotenv import load_dotenv
 import cv2
 from types import SimpleNamespace
+import sys
 # 加载env
 load_dotenv()
 DEFAULT_LOG_PATH = 'log.log'
 LOG_PATH = os.getenv("LOG_PATH", DEFAULT_LOG_PATH)
+root_dir = os.getenv("ROOTPATH")
+root_dir = os.path.abspath(root_dir)  # 解析相对路径为绝对路径
+# 确保 Python 可以正确 import 其他模块
+if root_dir not in sys.path:
+    sys.path.insert(0, root_dir)
 
 def dict_to_obj(d):
     if isinstance(d, dict):

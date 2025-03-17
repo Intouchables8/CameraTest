@@ -1,8 +1,12 @@
 import numpy as np
 import cv2
 from pathlib import Path
+import sys
+ROOTPATH = Path(__file__).parent.parent
+sys.path.append(str(ROOTPATH))
 from Common import utils
 from numba import njit
+# from Common.utils import *
 
 def _debug_image(image, rgb, mask_radius, num_Ring, all_roi_rect, val_ciede, index_max_min, fov_rings, save_path):
     utils.FilePath.create_folder(save_path)
@@ -11,7 +15,6 @@ def _debug_image(image, rgb, mask_radius, num_Ring, all_roi_rect, val_ciede, ind
     devece_id = utils.GlobalConfig.get_device_id()
     image_size = image.shape
     mask = utils.generate_mask(image_size, mask_radius)
-    image[mask == 0] = 0 
     
     # heat_map = (image >> 2)
     # for ring in all_roi_rect:
@@ -53,7 +56,7 @@ def _debug_image(image, rgb, mask_radius, num_Ring, all_roi_rect, val_ciede, ind
     cv2.imwrite(save_image_path, rgb) 
     
 @njit
-def _calcu_delta_c(r_img, gr_img, gb_img, b_img, lab_full, lab1, image_height, image_width, roi_height, radius):
+def _delta_c(r_img, gr_img, gb_img, b_img, lab_full, lab1, image_height, image_width, roi_height, radius):
     y_cord = np.arange(0, image_height, roi_height)
     x_cord = np.arange(0, image_width, roi_height)
     center_x = image_width //2
@@ -116,7 +119,57 @@ def _calcu_delta_c(r_img, gr_img, gb_img, b_img, lab_full, lab1, image_height, i
     range_delta_C1 = max_delta_c1 - min_delta_c1
     return range_delta_C0, range_delta_C1
 
-def color_uniformity(image, bayer_pattern, roi_size, mask_radius, fov_rings, csv_output, debug_flag=False, save_path=None):
+# @time_it_avg(10)
+def _old_cu(r_img, gr_img, gb_img, b_img, center_factor=8, roi_size=[20, 20]):
+    rows, cols = r_img.shape
+    cx, cy = cols // 2, rows // 2
+    center_width, center_height = cols // center_factor, rows // center_factor
+    center_width_half, center_height_half = center_width // 2, center_height // 2
+    c_row_start = cy - center_height_half
+    c_row_end = c_row_start + center_height
+    c_col_start = cx - center_width_half 
+    c_col_end = c_col_start + center_width 
+    
+    center_r = r_img[c_row_start: c_row_end, c_col_start: c_col_end]
+    center_gr = gr_img[c_row_start: c_row_end, c_col_start: c_col_end]
+    center_gb = gb_img[c_row_start: c_row_end, c_col_start: c_col_end]
+    center_b = b_img[c_row_start: c_row_end, c_col_start: c_col_end]
+    
+    center_grgb = (center_gr + center_gb) * 0.5
+
+    r_g = center_r / center_grgb
+    b_g = center_b / center_grgb
+    
+    c1 = 1 / r_g.mean()
+    c2 = 1 / b_g.mean()
+    
+    R = (r_img * c1).astype(np.float32)
+    B = (b_img * c2).astype(np.float32)
+
+    r_gr = R / gr_img
+    b_gr = B / gr_img
+    r_gb = R / gb_img
+    b_gb = B / gb_img
+    
+    r_g2 = (r_gr + r_gb) * 0.5
+    b_g2 = (b_gr + b_gb) * 0.5
+
+    r_g2 = cv2.blur(r_g2, roi_size, cv2.BORDER_CONSTANT)
+    b_g2 = cv2.blur(b_g2, roi_size, cv2.BORDER_CONSTANT)
+    
+    diff = np.abs(r_g2 - b_g2)
+
+    mx = np.max(diff)
+    mx_y, mx_x = np.unravel_index(np.argmax(diff), diff.shape)
+    CU_Ratio_RGr = r_gr[mx_y, mx_x]
+    CU_Ratio_RGb = r_gb[mx_y, mx_x]
+    CU_Ratio_BGr = b_gr[mx_y, mx_x]
+    CU_Ratio_BGb = b_gb[mx_y, mx_x]
+    return mx, CU_Ratio_RGr, CU_Ratio_RGb, CU_Ratio_BGr, CU_Ratio_BGb
+
+    
+
+def color_uniformity(image, bayer_pattern, roi_size, mask_radius, fov_rings, calcu_delta_c, calcu_old_cu, csv_output, debug_flag=False, save_path=None):
     save_path = Path(save_path)
     image_size = image.shape
     if not image.dtype == np.uint16:
@@ -173,10 +226,6 @@ def color_uniformity(image, bayer_pattern, roi_size, mask_radius, fov_rings, csv
         index_max_min[j, 0] = delta_E.argmax()
         index_max_min[j, 1] = delta_E.argmin()
     
-    r_img, gr_img, gb_img, b_img = utils.split_channel(image, bayer_pattern)    
-    image_height, image_width = image_size
-    deltaCRange, deltaRG_GB = _calcu_delta_c(r_img, gr_img, gb_img, b_img, lab_full, lab_center, image_height, image_width, roi_size[0], mask_radius)
-    
     if debug_flag:
         _debug_image(image, rgb, mask_radius, num_Ring, all_roi_rect, val_ciede, index_max_min, fov_rings, save_path)
         
@@ -202,9 +251,24 @@ def color_uniformity(image, bayer_pattern, roi_size, mask_radius, fov_rings, csv
                     'CU_09F_Mean': str(val_ciede[4,2]),
                     'CU_09F_Std': str(val_ciede[4,3]),
                     'CU_DeltaE_Range': str(val_ciede[:, 0].max() - val_ciede[:, 1].min()),
-                    'CU_DeltaC_Range': str(deltaCRange),
-                    'CU_Delta_RG_BG_Range': str(deltaRG_GB)
     }
+    if calcu_delta_c or calcu_old_cu:
+        r_img, gr_img, gb_img, b_img = utils.split_channel(image, bayer_pattern)    
+        image_height, image_width = image_size
+        
+        if calcu_delta_c:
+            deltaCRange, deltaRG_GB = _delta_c(r_img, gr_img, gb_img, b_img, lab_full, lab_center, image_height, image_width, roi_size[0], mask_radius)
+            cu_data['CU_DeltaC_Range'] = deltaCRange
+            cu_data['CU_Delta_RG_BG_Range'] = deltaRG_GB
+
+        if calcu_old_cu:
+            mx, CU_Ratio_RGr, CU_Ratio_RGb, CU_Ratio_BGr, CU_Ratio_BGb = _old_cu(r_img, gr_img, gb_img, b_img)
+            cu_data['CU_Ratio_Max'] = mx
+            cu_data['CU_Ratio_RGr '] = CU_Ratio_RGr
+            cu_data['CU_Ratio_RGb'] = CU_Ratio_RGb
+            cu_data['CU_Ratio_BGr'] = CU_Ratio_BGr
+            cu_data['CU_Ratio_BGb '] = CU_Ratio_BGb
+        
     if csv_output:
         save_file_path = save_path / 'cu_data.csv'
         utils.save_dict_to_csv(cu_data, save_file_path)
@@ -222,13 +286,13 @@ def func(cu_path, save_path, config_path):
     
     if cu_cfg.input_pattern == 'Y' and image_cfg.bayer_pattern != 'Y':
         image = utils.bayer_2_y(image, image_cfg.bayer_pattern)
-    color_uniformity(image, cu_cfg.input_pattern, cu_cfg.roi_size, cu_cfg.mask_radius, cu_cfg.fov_rings, cu_cfg.csv_output, cu_cfg.debug_flag, save_path)
+    color_uniformity(image, cu_cfg.input_pattern, cu_cfg.roi_size, cu_cfg.mask_radius, cu_cfg.fov_rings, cu_cfg.calcu_delta_c, cu_cfg.calcu_old_cu, cu_cfg.csv_output, cu_cfg.debug_flag, save_path)
     return True
 
 if __name__ == '__main__':
-    cu_path = r'G:\Script\image\california\CU\California_P0_DARK_1_2_Light_352RK1AFBV004K_3660681a28230914610100_20231226_161547_0.raw'
-    save_path = r'G:\Script\result\california'
-    config_path = r'G:\Script\Config\config_california.yaml'
+    cu_path = r'E:\Wrok\ERS\Diamond RGB\Module Images (for algo correlation)\Light (Pass)\class\0\20241221_144804__0_AS_DNPVerify_377TT04G9L01TG_0.raw'
+    save_path = r'G:\CameraTest\result'
+    config_path = r'G:\CameraTest\Config\config_rgb.yaml'
     func(cu_path, save_path, config_path)
     print('CU finished!')
 

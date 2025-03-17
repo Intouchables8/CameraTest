@@ -211,11 +211,11 @@ class TVEBlemish:
 
         # 自动调整子图布局
         plt.tight_layout()
-        savepath = save_path / f'{"Pass" if blemish_count > 0 else "Fail"}_{device_id}.jpg'
+        savepath = save_path / f'{"Pass" if blemish_count == 0 else "Fail"}_{device_id}.jpg'
         plt.savefig(savepath, bbox_inches="tight", pad_inches=0.1, dpi=dpi)  # 设置 dpi 提高保存质量
         plt.close(fig)  # 释放内存
     
-    @time_it_avg(2)   
+    # @time_it_avg(2)   
     def run(self, image, save_path):
         save_path = Path(save_path)
         # -------------- Down Scale --------------
@@ -273,7 +273,7 @@ class TVEBlemish:
 if __name__ == '__main__':
     file_name = r'E:\Wrok\ERS\Oregon\对标数据\Blemish\Blemish NG images\images'
     save_path = r'E:\Wrok\ERS\Oregon\对标数据\Blemish\Blemish NG images\images\result'
-    config_path = r'G:\Script\Config\config_california.yaml'
+    config_path = r'G:\CameraTest\Config\config_california.yaml'
     blemish = TVEBlemish(config_path)
     
     utils.process_file_or_folder(file_name,'.raw', blemish.func, save_path)

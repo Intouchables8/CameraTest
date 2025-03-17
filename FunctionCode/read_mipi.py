@@ -2,9 +2,9 @@ import cv2
 import numpy as np
 from pathlib import Path
 import sys
-common_path = Path(__file__).parent.parent / "Common"
-sys.path.append(str(common_path))
-import utils
+ROOTPATH = Path(__file__).parent.parent.parent
+sys.path.append(str(ROOTPATH))
+from Common import utils
 
 def read_mipi(file_name, rows, cols, save_path, output_type, crop_tblr):
     width = (cols * 10) // 8

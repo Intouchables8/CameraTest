@@ -49,7 +49,7 @@ def calcu_distance(points_xy, center_xy):
     distance = np.sqrt(np.sum((points_xy - center_xy)**2, axis=1))
     return distance
 
-def sort_order_index(points_xy, center_xy, delta_angle=0):
+def sort_order_index(points_xy, center_xy, delta_angle=15, clockwise=False):
     '''
         1 -------- 2
         |          |
@@ -57,7 +57,10 @@ def sort_order_index(points_xy, center_xy, delta_angle=0):
         4 -------- 3 
     '''
     delta_rad = np.deg2rad(delta_angle)
-    angles = np.arctan2(-(points_xy[:,1] - center_xy[1]), (-(points_xy[:, 0] - center_xy[0]))) + delta_rad
+    if clockwise:
+        angles = np.arctan2(-(points_xy[:,1] - center_xy[1]), (points_xy[:, 0] - center_xy[0])) + delta_rad
+    else:
+        angles = np.arctan2(-(points_xy[:,1] - center_xy[1]), (-(points_xy[:, 0] - center_xy[0]))) + delta_rad
     angles = angles % (2 * np.pi)  # 将弧度从-pi~pi转换为0~2pi
     index = np.argsort(angles)
     return index
@@ -125,6 +128,7 @@ def save_dict_to_csv(data, save_path):
      
 def save_lists_to_csv(data, name, save_path):
     file_exists = save_path.exists()
+    data = list(data)
     with open(save_path, mode='a', newline='') as file:
         writer = csv.writer(file)
         if not file_exists:

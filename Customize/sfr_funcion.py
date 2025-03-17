@@ -2,7 +2,7 @@ import numpy as np
 from Common import utils
 
 
-def select_point_california(centroid, center_xy, n_point, point_dist_from_center, local_debug=False):
+def select_point_california(centroid, center_xy, n_point, point_dist_from_center, clockwise, local_debug=False):
     '''
     找图中与圆心等距的point，并逆时针排序
     1 -------- 2
@@ -17,11 +17,11 @@ def select_point_california(centroid, center_xy, n_point, point_dist_from_center
     if len(index) != n_point:
         raise KeyError(f'point dist to center: {dist_2_center} /n {len(index)} found, but {n_point} needed!')
     point_centroid = centroid[index]
-    sorted_index = utils.sort_order_index(point_centroid, center_xy, 15)
+    sorted_index = utils.sort_order_index(point_centroid, center_xy, 15, clockwise)
     sorted_point = point_centroid[sorted_index]
     return sorted_point
 
-def select_point_cv(centroid, center_xy, n_point, point_dist_from_center, local_debug=False):
+def select_point_cv(centroid, center_xy, n_point, point_dist_from_center, clockwise, local_debug=False):
     '''
     找图中与圆心等距的point，并逆时针排序
     1 -------- 2
@@ -44,14 +44,61 @@ def select_point_cv(centroid, center_xy, n_point, point_dist_from_center, local_
     
 
 
-def rotation_1():
+def rotation_rgb(point_xy_0, point_xy_1, point_xy_2, point_xy_3, point_xy_4):
+    '''
+    #      2
+    #  3   0   1 
+    #      4
+    Rotation_1 = atan((Y0-Y1)/(X1-X0)) 
+    Rotation_2 = atan((X2-X0)/(Y2-Y0)) 
+    Rotation_3 = atan((Y0-Y3)/(X3-X0)) 
+    Rotation_4 = atan((X4-X0)/(Y4-Y0))
+    '''
+    rotation_1 = np.arctan((point_xy_0[1] - point_xy_1[1]) / (point_xy_1[0] - point_xy_0[0])) 
+    rotation_2 = np.arctan((point_xy_2[0] - point_xy_0[0]) / (point_xy_2[1] - point_xy_0[1])) 
+    rotation_3 = np.arctan((point_xy_2[1] - point_xy_3[1]) / (point_xy_2[0] - point_xy_3[0])) 
+    rotation_4 = np.arctan((point_xy_4[0] - point_xy_0[0]) / (point_xy_4[1] - point_xy_0[1])) 
+    rotation = (rotation_1 + rotation_2 + rotation_3 + rotation_4) * 0.25
+    return rotation, rotation_1, rotation_2, rotation_3, rotation_4
+
+def fov_rgb(point_xy_1, point_xy_2, point_xy_3, point_xy_4, image_size, length_h_real_mm, length_v_real_mm, chart_distance):
+    length_h_12 = utils.calcu_distance(point_xy_1, point_xy_2)
+    length_h_34 = utils.calcu_distance(point_xy_3, point_xy_4)
+    length_v_13 = utils.calcu_distance(point_xy_1, point_xy_3)
+    length_v_24 = utils.calcu_distance(point_xy_2, point_xy_4)
+    length_h_mean = (length_h_12 + length_h_34) * 0.5
+    length_v_mean = (length_v_13 + length_v_24) * 0.5
+    FOV_factor_h = image_size[1] / length_h_mean
+    FOV_factor_v = image_size[0] / length_v_mean
+    length_FOV_h_real_mm = length_h_real_mm * FOV_factor_h 
+    length_FOV_v_real_mm = length_v_real_mm * FOV_factor_v
+    length_FOV_d_real_mm = np.sqrt(length_FOV_h_real_mm ** 2, length_FOV_v_real_mm ** 2) 
+    FOV_H = 2 * np.arctan(length_FOV_h_real_mm/2/chart_distance) 
+    FOV_V = 2 * np.arctan(length_FOV_v_real_mm/2/chart_distance) 
+    FOV_D = 2 * np.arctan(length_FOV_d_real_mm/2/chart_distance) 
+    return FOV_H, FOV_V, FOV_D
+
+def tilt_rgb(point_xy_1, point_xy_2, point_xy_3, point_xy_4):
+    '''
+    tilt_X = atan((X1-X3)/(Y3-Y1)) + atan((X4-X2)/(Y4-Y2))
+    tilt_Y = atan((Y1-Y2)/(X2-X1)) + atan((Y4-Y3)/(X4-X3)) 
+    '''
+    tilt_x = np.arctan((point_xy_1[0] - point_xy_3[0]) / (point_xy_3[1] - point_xy_1[1])) + np.arctan((point_xy_4[0] - point_xy_2[0]) / (point_xy_4[1] - point_xy_2[1])) 
+    tilt_y = np.arctan((point_xy_1[1] - point_xy_2[1]) / (point_xy_2[0] - point_xy_1[0])) + np.arctan((point_xy_4[1] - point_xy_3[1]) / (point_xy_4[0] - point_xy_3[0])) 
+    return tilt_x, tilt_y
+    
+
+
+
+    
+    
+    
     pass
 
 def pointing_oc_1():
     pass
 
-def tilt_1():
-    pass
+
 
 def distortion_1():
     pass

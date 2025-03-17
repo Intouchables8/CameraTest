@@ -1,4 +1,8 @@
 import numpy as np
+import sys
+from pathlib import Path
+ROOTPATH = Path(__file__).parent.parent
+sys.path.append(str(ROOTPATH))
 from Common import utils
 from pathlib import Path
 import cv2
@@ -14,13 +18,13 @@ def _debug_image(image, ind_dpd, avg_image, diff_image, channel_name, save_path)
     avg_data =[]
     diff_data =[]
 
-    name = ['channel', 'x', 'y', 'value', 'avg', 'diff']
+    name = ['channel', 'x', 'y', 'value', 'image mean', 'diff']
     for i in range(len(ind_dpd[0])):
         channel_data.append(channel_name)
         x_data.append(str(ind_dpd[1][i]))
         y_data.append(str(ind_dpd[0][i]))
         value_data.append(image[ind_dpd[0][i], ind_dpd[1][i]])
-        avg_data.append(avg_image[ind_dpd[0][i], ind_dpd[1][i]])
+        avg_data.append(avg_image)
         diff_data.append(diff_image[ind_dpd[0][i], ind_dpd[1][i]])
 
     data = zip(channel_data, x_data, y_data, value_data, avg_data, diff_data)
@@ -48,35 +52,7 @@ def _debug_image(image, ind_dpd, avg_image, diff_image, channel_name, save_path)
     #     writeLog(com_defect_pixel, save_file_path)
 #endregion
 
-def _CalDSNU(image, roi_size):
-    # ## --------------------------------------
-    # #  2024 04 03 DPD的位置替换成图像均值  by Sheree And Alex
-    # avg = image.mean()
-    # image[defect_pixel_map > 0] = avg
-    # ##----------------------------------------
-    integralImage = cv2.integral(image)  # 对图像的每个点与之前的所有点进行求和
-    avgBlockArray = np.zeros((189, 189), np.float64)
-    avgBlocks = []
-    W, H = image.shape[1], image.shape[0]
-    col = 0
-    roi_size_height = roi_size[0]
-    for x in range(0, W, roi_size_height):
-        row = 0
-        for y in range(0, H, roi_size_height):
-            br = (min(y + roi_size_height, H), min(x + roi_size_height, W))  # 右下角
-            tl = (y, x)  # 左上角
-            tr = (y, min(x + roi_size_height, W))  # 右上角
-            bl = (min(y + roi_size_height, H), x)  # 左下角
-            sumBlock = integralImage[br] - integralImage[tr] - integralImage[bl] + integralImage[tl]
-            avgBlock = sumBlock / ((br[0] - tl[0]) * (br[1] - tl[1]))
-            avgBlocks.append(avgBlock)
-            avgBlockArray[row, col] = avgBlock
-            row += 1
-        col += 1
-    DSNU = max(avgBlocks) - min(avgBlocks)
-    return DSNU, max(avgBlocks), min(avgBlocks)
-
-def _dpd_support(image, channel_name, thresh, debug_flag, save_path):
+def _dpd_support(image, channel_name, thresh, debug_flag, save_path, distribution):
     total_dpd = 0
     singlet_dpd = 0
     doublet_dpdt = 0
@@ -84,14 +60,24 @@ def _dpd_support(image, channel_name, thresh, debug_flag, save_path):
     image_size = image.shape
     avg_image = image.mean()
     diff_image = np.abs(image - avg_image)
+    
+    if distribution:
+        above_50 = np.count_nonzero(diff_image > 50)
+        above_100 = np.count_nonzero(diff_image > 100)
+        above_150 = np.count_nonzero(diff_image > 150)
+        above_200 = np.count_nonzero(diff_image > 200)
+        above = [above_50, above_100, above_150, above_200]
+    else:
+        above = [0, 0, 0, 0]
+        
     ind_dpd = np.where(diff_image > thresh)
     
     # 找到single double triple的数量
-    dpdMap = np.zeros(image_size, np.uint8)
+    dpd_map = np.zeros(image_size, np.uint8)
     if len(ind_dpd[0]) > 0:
         total_dpd = len(ind_dpd[0])
-        dpdMap[ind_dpd[0], ind_dpd[1]] = 255
-        num, _, area, _ = cv2.connectedComponentsWithStats(dpdMap, connectivity=8)
+        dpd_map[ind_dpd[0], ind_dpd[1]] = 255
+        num, _, area, _ = cv2.connectedComponentsWithStats(dpd_map, connectivity=8)
         index_single = []
         index_double = []
         index_triple = []
@@ -107,19 +93,21 @@ def _dpd_support(image, channel_name, thresh, debug_flag, save_path):
                 index_triple.append(i)
         
         if debug_flag:
-            _debug_image(image, ind_dpd, avg_image, diff_image, channel_name, save_path)
+            if len(ind_dpd[0]) > 0:
+                _debug_image(image, ind_dpd, avg_image, diff_image, channel_name, save_path)
         
-    return total_dpd, singlet_dpd, doublet_dpdt, triplet_dpd
+        
+    return total_dpd, singlet_dpd, doublet_dpdt, triplet_dpd, above, dpd_map
 
-def defect_pixel_dark(image, bayer_pattern, roi_size, thresh, csv_output, debug_flag=False, save_path=None):
+def defect_pixel_dark(image, bayer_pattern, thresh, csv_output, debug_flag=False, save_path=None, distribution=False):
     save_path = Path(save_path)
     if bayer_pattern == 'RGGB' or bayer_pattern == 'BGGR':
         r, gr, gb, b = utils.split_channel(image, bayer_pattern)
-        r_total_dpd, r_singlet_dpd, r_doublet_dpd, r_triplet_dpd = _dpd_support(r, 'R', thresh, debug_flag, save_path)
-        gr_total_dpd, gr_singlet_dpd, gr_doublet_dpd, gr_triplet_dpd = _dpd_support(gr, 'Gr', thresh, debug_flag, save_path)
-        gb_total_dpd, gb_singlet_dpd, gb_doublet_dpd, gb_triplet_dpd = _dpd_support(gb, 'Gb', thresh, debug_flag, save_path)
-        b_total_dpd, b_singlet_dpd, b_doublet_dpd, b_triplet_dpd = _dpd_support(b, 'B', thresh, debug_flag, save_path)
-        y_total_dpd, y_singlet_dpd, y_doublet_dpd, y_triplet_dpd = _dpd_support(image, 'orgin', thresh, debug_flag, save_path)
+        r_total_dpd, r_singlet_dpd, r_doublet_dpd, r_triplet_dpd, above, _ = _dpd_support(r, 'R', thresh, debug_flag, save_path, distribution)
+        gr_total_dpd, gr_singlet_dpd, gr_doublet_dpd, gr_triplet_dpd, above, _ = _dpd_support(gr, 'Gr', thresh, debug_flag, save_path, distribution)
+        gb_total_dpd, gb_singlet_dpd, gb_doublet_dpd, gb_triplet_dpd, above, _ = _dpd_support(gb, 'Gb', thresh, debug_flag, save_path, distribution)
+        b_total_dpd, b_singlet_dpd, b_doublet_dpd, b_triplet_dpd, above, _ = _dpd_support(b, 'B', thresh, debug_flag, save_path, distribution)
+        y_total_dpd, y_singlet_dpd, y_doublet_dpd, y_triplet_dpd, above, dpd_map = _dpd_support(image, 'orgin', thresh, debug_flag, save_path, distribution)
         dpd_data = { 
                     'DPD_Contrast_Threshold': str(thresh),
                     'DPD_Singlet_count': str(y_singlet_dpd),
@@ -155,25 +143,24 @@ def defect_pixel_dark(image, bayer_pattern, roi_size, thresh, csv_output, debug_
                     'DPD_Total_Area_RBGrGbSum': str(b_total_dpd + gb_total_dpd + gr_total_dpd + r_total_dpd)
         }
     else:
-        total_dpd, singlet_dpd, doublet_dpd, triplet_dpd = _dpd_support(image, 'orgin', thresh, debug_flag, save_path)
+        total_dpd, singlet_dpd, doublet_dpd, triplet_dpd, above, dpd_map = _dpd_support(image, 'orgin', thresh, debug_flag, save_path, distribution)
+        above_50, above_100, above_150, above_200 = above 
         dpd_data = {
             'dpd Contrast Threshold': str(thresh),
             'dpd_Singlet_count': str(singlet_dpd),
             'dpd_Doublet_count': str(doublet_dpd),
             'dpd_Triplet_count': str(triplet_dpd),
-            'dpd_Total_count': str(total_dpd)
+            'dpd_Total_count': str(total_dpd),
+            'Above_50': str(above_50),
+            'Above_100': str(above_100),
+            'Above_150': str(above_150),
+            'Above_200': str(above_200),
         }
-    
-    # 计算DSNU
-    DSNU, max_dsnu, min_dsnu = _CalDSNU(image, roi_size)
-    dpd_data['DSNU'] = str(DSNU)
-    dpd_data['Max_DSNU'] = str(max_dsnu)
-    dpd_data['MIN_DSNU'] = str(min_dsnu)
     
     if csv_output:
         save_file_path = save_path / 'dpd_data.csv'
-        
         utils.save_dict_to_csv(dpd_data, save_file_path)
+    return dpd_map
 
 def func(file_name, save_path, config_path):
     config_path = Path(config_path)
@@ -190,13 +177,13 @@ def func(file_name, save_path, config_path):
     if dpd_cfg.sub_black_level:
         image = utils.sub_black_level(image, image_cfg.black_level)
     
-    defect_pixel_dark(image, dpd_cfg.input_pattern, dpd_cfg.roi_size, dpd_cfg.thresh, dpd_cfg.csv_output, dpd_cfg.debug_flag, save_path)
+    defect_pixel_dark(image, dpd_cfg.input_pattern, dpd_cfg.roi_size, dpd_cfg.thresh, dpd_cfg.csv_output, dpd_cfg.debug_flag, save_path, dpd_cfg.distribution)
     return True
 
 if __name__ == '__main__':
-    file_name = r'G:\Script\image\Dark\dpd\California_P0_DARK_1_2_Dark16X_352RK1AFBV00K5_3660681a28230823610100_20231226_122724_0.raw'
-    save_path = r'G:\Script\result'
-    config_path = r'G:\Script\Config\config.yaml'
+    file_name = r'G:\CameraTest\image\CV\dark\Ketron_P0C_FF2_Line1_DARK1_EOL-Dark_373KQ11GC300V8_030703111601010e0b0300001a08_20241228153651_0.raw'
+    save_path = r'G:\CameraTest\result'
+    config_path = r'G:\CameraTest\Config\config_cv.yaml'
     import time 
     start = time.time()
     func(file_name, save_path, config_path)
