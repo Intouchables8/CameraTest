@@ -83,7 +83,17 @@ light:
     sub_black_level: True
     black_level: 64
     debug_flag: true
+    csv_output: true 
     dpi: 50
+  
+  color_calibration:
+    sub_black_level: true
+    black_level: 64
+    csv_output: true 
+  
+  LSC:
+    table_size: [13, 17]
+    roi_size: [10, 10]
 
 sfr:
   image_info:

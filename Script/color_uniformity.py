@@ -154,6 +154,7 @@ def _old_cu(r_img, gr_img, gb_img, b_img, center_factor=8, roi_size=[20, 20]):
     r_g2 = (r_gr + r_gb) * 0.5
     b_g2 = (b_gr + b_gb) * 0.5
 
+    # anchor如何设置   后续需要进一步考虑
     r_g2 = cv2.blur(r_g2, roi_size, cv2.BORDER_CONSTANT)
     b_g2 = cv2.blur(b_g2, roi_size, cv2.BORDER_CONSTANT)
     

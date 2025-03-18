@@ -1,5 +1,4 @@
 import os
-from itertools import islice
 import shutil
 
 # # 给 ********************* Noise图像分组 ********************
