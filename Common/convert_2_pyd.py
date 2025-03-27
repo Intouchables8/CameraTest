@@ -148,7 +148,6 @@ def _delete_target_py(target_dir):
         
 
 def convert_2_pyd(source_file, target_dir, encripted):
-    print('*************************************************************************')
     try:
         source_file = Path(source_file).resolve()
         target_dir = Path(target_dir).resolve()

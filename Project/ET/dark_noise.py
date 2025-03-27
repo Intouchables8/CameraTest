@@ -85,9 +85,9 @@ def func(file_name, save_path, config_path):
     return True
 
 if __name__ == '__main__':
-    file_name = r'G:\CameraTest\image\CV\dark\Ketron_P0C_FF2_Line1_DARK1_EOL-Dark_373KQ11GC300V8_030703111601010e0b0300001a08_20241228153651_0.raw'
-    save_path = r'E:\Wrok\Temp\CaliforniaFATP\20250312\20250311\offline\holder_1\356YW33GB6001T\20250311171830\Dark\noise\camera\result'
-    config_path = r'G:\CameraTest\Config\config_cv.yaml'
+    file_name = r'G:\Git_local\MyGit\test\California\Dark\noise\California_P0_DARK_1_2_Dark16X_352RK1AFBV00K5_3660681a28230823610100_20231226_122724_0.raw'
+    save_path = r'G:\CameraTest\result'
+    config_path = r'G:\CameraTest\Config\config_california.yaml'
     import time 
     start = time.time()
     func(file_name, save_path, config_path)
