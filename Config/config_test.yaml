@@ -179,7 +179,6 @@ dark:
     csv_output: true 
     debug_flag: true
     
-
   dark_noise:
     image_count: 5
     sub_black_level: false
