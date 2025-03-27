@@ -1,15 +1,13 @@
-import numpy as np
 import sys
-from pathlib import Path
-ROOTPATH = Path(__file__).parent.parent
+import os
+ROOTPATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(str(ROOTPATH))
 from Common import utils
-from pathlib import Path
+
 
 
 def color_calibration(file_name, image_size, image_type, crop_tblr, bayer_pattern,color_temperture, sub_black_level, black_level, csv_output, save_path=None):
-    save_path = Path(save_path)
-    image = utils.load_image(file_name, image_type, image_size, crop_tblr)
+    image = utils.load_image(str(file_name), image_type, image_size, crop_tblr)
     r, gr, gb, b = utils.split_channel(image, bayer_pattern)
     rows, cols = r.shape
     cx, cy = rows // 2, cols // 2
@@ -43,12 +41,12 @@ def color_calibration(file_name, image_size, image_type, crop_tblr, bayer_patter
             }
     
     if csv_output:
-        save_path = save_path / 'cc_data.csv'
-        utils.save_dict_to_csv(data, save_path)
+        
+        os.makedirs(save_path, exist_ok=True)
+        save_file_path = os.path.join(save_path, 'cc_data.csv')
+        utils.save_dict_to_csv(data, str(save_file_path))
 
 def func(file_name, save_path, config_path, color_temperture):
-    file_name = Path(file_name)
-    config_path = Path(config_path)
     cfg = utils.load_config(config_path).light
     image_cfg = cfg.image_info
     cc_cfg = cfg.color_calibration

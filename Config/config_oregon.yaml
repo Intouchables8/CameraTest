@@ -1,0 +1,32 @@
+light:
+  image_info:
+    image_size: [3024, 4032]
+    crop_tblr: [0, 0, 0, 0]
+    bayer_pattern: "RGGB"  
+    image_type: "RAW10"
+    sub_black_level: True
+    black_level: 64
+  
+
+  blemish:
+    image_size: [3024, 4032]
+    down_scale_factor: 2  
+    kernel_size: [71, 71]  
+    morph: False
+    morph_kern: [0, 0]
+    poly_degree: 6
+    side_mask: 20          
+    mask_radius: 2260    
+    denoise_sigma: 5       
+    threshold_m: 4
+    threshold_n: 1
+    threshold_min_max: [2, 8]   
+    min_area: 15
+    input_pattern: "Y"
+    seg_dir: 1
+    sub_black_level: True
+    black_level: 64
+    debug_flag: true
+    csv_output: true 
+    dpi: 150
+  

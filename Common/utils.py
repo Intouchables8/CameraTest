@@ -1,17 +1,14 @@
-import sys
-from pathlib import Path
-common_path = Path(__file__).parent
-sys.path.append(str(common_path))
-from utils_support import *
+import os
+from Common import utils_support
 import logging
-import math
+import glob
 import numpy as np
 import cv2
 from typing import Literal
 from datetime import datetime
 import csv
 import yaml
-from numba import njit
+# from numba import njit
 import time
 from functools import wraps
 
@@ -25,13 +22,13 @@ class GlobalConfig:
     def get_device_id(cls):
         return cls.DEVICE_ID
 
-def load_config(file_path):
-    if not file_path.exists():
-        raise KeyError(f'load_config: unable find config path: {file_path}')
+def load_config(file_name):
+    if not os.path.exists(file_name):
+        raise KeyError(f'load_config: unable find config path: {file_name}')
         
-    with open(file_path, "r", encoding="utf-8") as f:
+    with open(file_name, "r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
-    return dict_to_obj(config)
+    return utils_support.dict_to_obj(config)
 
 def draw_mark_with_text(image, x, y, text, mark_radius=5, mark_color=(0, 255, 255),  text_offset_x=10, text_offset_y=0, text_size=1, text_color=(0, 168, 255), text_thickness=2):
     x = int(round(x))
@@ -75,7 +72,7 @@ def group_data(data, thresh):
     grouped_indices = np.split(sorted_indices, boundaries + 1)  # 按相同的边界分割索引
     return grouped_data, grouped_indices
     
-def log_message(level: Literal['INFO', 'WARNING', 'ERROR'], message: str, log_path: str = LOG_PATH):
+def log_message(level: Literal['INFO', 'WARNING', 'ERROR'], message: str, log_path: str=r'../log.txt'):
     logging.basicConfig(
         level=logging.DEBUG,  # 记录所有级别的日志
         format="%(asctime)s - %(levelname)s - %(message)s",
@@ -108,7 +105,7 @@ def log_message(level: Literal['INFO', 'WARNING', 'ERROR'], message: str, log_pa
               
 def save_dict_to_csv(data, save_path):
     # 检查文件是否存在
-    file_exists = save_path.exists()
+    file_exists = os.path.exists(save_path)
 
     # 获取当前时间并格式化
     current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -127,7 +124,8 @@ def save_dict_to_csv(data, save_path):
             writer.writerow([GlobalConfig.get_device_id()] + [current_time] + list(data.values())) 
      
 def save_lists_to_csv(data, name, save_path):
-    file_exists = save_path.exists()
+    
+    file_exists = os.path.exists(save_path)
     data = list(data)
     with open(save_path, mode='a', newline='') as file:
         writer = csv.writer(file)
@@ -156,17 +154,18 @@ def bayer_2_y(bayer_image, bayer_pattern):
     y_image = np.round(0.2126 * rgb[:, :, 0] + 0.7152 * rgb[:, :, 1] + 0.0722 * rgb[:, :, 2]).astype(np.uint16)
     return y_image
 
-def search_files(file_path, extension, recursive=False):
-    path = Path(file_path)
-    if path.is_file():
-        dir = path.parent
+def search_files(file_name, extension, recursive=False):
+    if os.path.isfile(file_name):
+        dir = os.path.dirname(file_name)
     else:
-        dir = path
+        dir = file_name
 
+    pattern = f"*{extension}"
     if recursive:
-        files = list(dir.rglob(f'*{extension}'))  # 递归查找
+        files = glob.glob(os.path.join(dir, "**", pattern), recursive=True)  # 递归查找
     else:
-        files = list(dir.glob(f'*{extension}'))  # 仅当前目录
+        files = glob.glob(os.path.join(dir, pattern))  # 仅当前目录查找
+
     return files
 
 def crop_image(image, crop_tblr):
@@ -180,12 +179,12 @@ def crop_image(image, crop_tblr):
     
 def load_image(file_name: str, image_type: Literal['RGB', 'RAW8', 'RAW10', 'MIPI10'], image_size, crop_tblr= [0,0,0,0]):
     if image_type == 'RGB':
-        image, device_id = read_rgb(file_name)
+        image, device_id = utils_support.read_rgb(str(file_name))
     elif image_type == 'RAW8':
         print('raw8 is not written')
         exit()
     elif image_type == 'RAW10':
-        image, device_id = read_raw10(file_name, image_size)
+        image, device_id = utils_support.read_raw10(str(file_name), image_size)
     elif image_type == 'MIPI10':
         print('raw8 is not written')
         exit()
@@ -199,9 +198,9 @@ def load_image(file_name: str, image_type: Literal['RGB', 'RAW8', 'RAW10', 'MIPI
     return image
 
 def load_images(file_name, file_count, image_type: Literal['RGB', 'RAW8', 'RAW10', 'MIPI10'], image_size, crop_tblr= [0,0,0,0]):
-    file_path = Path(file_name)
-    extension = file_path.suffix
-    files_name = search_files(file_name, extension)
+    extension = os.path.splitext(file_name)[1] 
+    # files_name = list(file_name.parent.rglob(f'*{extension}'))
+    files_name = search_files(str(file_name), extension)
     cnt = len(files_name)
     if cnt != file_count:
         raise ValueError(f"load_images: only find {cnt} files, {file_count} needed!")
@@ -277,162 +276,72 @@ def raw_2_rgb(image):
 def show_image(image, scale_factor=1, name='test'):
     if image.dtype == np.uint16:
         image_8bit = (image >> 2).astype(np.uint8)
-        show_image_support(image_8bit, scale_factor, name)
+        utils_support.show_image_support(image_8bit, scale_factor, name)
     elif image.dtype == np.uint8:
-        show_image_support(image, scale_factor, name)
+        utils_support.show_image_support(image, scale_factor, name)
     else:
         range = image.max() - image.min()
         norm_image = (image - image.min()) / range
-        show_image_support(norm_image, scale_factor, name)
+        utils_support.show_image_support(norm_image, scale_factor, name)
 
 class FilePath:
     @staticmethod
     def create_folder(file_name):
-        path = Path(file_name)
-        path.mkdir(parents=True, exist_ok=True)
+        os.makedirs(file_name, exist_ok=True)
 
     @staticmethod
     def generate_save_folder_name(file_name, folder_name):
-        path = Path(file_name)
-        current_directory = path.parent if path.is_file() else path
-        new_folder_path = current_directory / folder_name
-        return new_folder_path
+        current_directory = os.path.dirname(file_name) if os.path.isfile(file_name) else file_name
+        new_folder_path = os.path.join(current_directory, folder_name)
+        return new_folder_path  # 返回字符串
+
+def get_rect(center_xy, roi_size):
+    half_roi_height = roi_size[1] // 2
+    half_roi_wight = roi_size[0] // 2
+    row_start = center_xy[1] - half_roi_height
+    row_end = row_start - roi_size[1]
+    col_start = center_xy[0] - half_roi_wight
+    col_end = col_start - roi_size[0]
+    return row_start, row_end, col_start, col_end
+ 
+def auto_exposure(image, bayer_pattern, center_xy, roi_size, brightness_type='Y'):
+    if bayer_pattern == 'Y':
+        row_start, row_end, col_start, col_end = get_rect(center_xy, roi_size)
+        brightness = image[row_start: row_end, col_start: col_end]
+        return brightness
+    
+    if brightness_type.lower() == 'Y'.lower():
+        y_image = bayer_2_y(image, bayer_pattern)
+        row_start, row_end, col_start, col_end = get_rect(center_xy, roi_size)
+        brightness = y_image[row_start: row_end, col_start: col_end]
         
-@njit
-def calcu_ciede2000(Lab_1, Lab_2):
-    # 预计算常量
-    C_25_7 = 6103515625.0  # 25**7
-    two_pi = 2 * math.pi
-    pi_6 = math.pi / 6.0
-    pi_30 = math.pi / 30.0
-    deg63 = 63 * math.pi / 180.0
-
-    # 解包 Lab 值
-    L1 = Lab_1[0]
-    a1 = Lab_1[1]
-    b1 = Lab_1[2]
-    L2 = Lab_2[0]
-    a2 = Lab_2[1]
-    b2 = Lab_2[2]
-
-    # 初始计算色度
-    C1 = math.sqrt(a1 * a1 + b1 * b1)
-    C2 = math.sqrt(a2 * a2 + b2 * b2)
-    C_ave_init = (C1 + C2) / 2.0
-    # 计算 G 因子，缓存 C_ave_init**7
-    C_ave_init_pow7 = C_ave_init ** 7
-    G = 0.5 * (1 - math.sqrt(C_ave_init_pow7 / (C_ave_init_pow7 + C_25_7)))
-
-    # 计算调整后的 a 值，不变的 L 和 b
-    a1_ = (1 + G) * a1
-    a2_ = (1 + G) * a2
-    L1_, L2_ = L1, L2
-    b1_, b2_ = b1, b2
-
-    # 计算新的色度
-    C1_ = math.sqrt(a1_ * a1_ + b1_ * b1_)
-    C2_ = math.sqrt(a2_ * a2_ + b2_ * b2_)
-
-    # 计算色相角 h
-    if a1_ == 0.0 and b1_ == 0.0:
-        h1_ = 0.0
-    else:
-        h1_ = math.atan2(b1_, a1_)
-        if h1_ < 0:
-            h1_ += two_pi
-
-    if a2_ == 0.0 and b2_ == 0.0:
-        h2_ = 0.0
-    else:
-        h2_ = math.atan2(b2_, a2_)
-        if h2_ < 0:
-            h2_ += two_pi
-
-    # 计算亮度差、色度差
-    dL_ = L2_ - L1_
-    dC_ = C2_ - C1_
-
-    # 计算色相差
-    dh_ = h2_ - h1_
-    if C1_ * C2_ == 0.0:
-        dh_ = 0.0
-    else:
-        if dh_ > math.pi:
-            dh_ -= two_pi
-        elif dh_ < -math.pi:
-            dh_ += two_pi
-    dH_ = 2.0 * math.sqrt(C1_ * C2_) * math.sin(dh_ / 2.0)
-
-    # 计算平均亮度和平均色度（使用调整后的色度）
-    L_ave = (L1_ + L2_) / 2.0
-    C_ave_final = (C1_ + C2_) / 2.0
-
-    # 计算平均色相
-    dh_abs = abs(h1_ - h2_)
-    sh_sum = h1_ + h2_
-    if C1_ * C2_ == 0.0:
-        h_ave = h1_ + h2_
-    else:
-        if dh_abs <= math.pi:
-            h_ave = (h1_ + h2_) / 2.0
-        else:
-            if sh_sum < two_pi:
-                h_ave = (h1_ + h2_) / 2.0 + math.pi
-            else:
-                h_ave = (h1_ + h2_) / 2.0 - math.pi
-
-    # 计算 T 因子（使用预计算常量）
-    T = (1 - 0.17 * math.cos(h_ave - pi_6)
-         + 0.24 * math.cos(2.0 * h_ave)
-         + 0.32 * math.cos(3.0 * h_ave + pi_30)
-         - 0.2 * math.cos(4.0 * h_ave - deg63))
-
-    # 将 h_ave 转换为角度并归一化
-    h_ave_deg = h_ave * 180.0 / math.pi
-    if h_ave_deg < 0.0:
-        h_ave_deg += 360.0
-    elif h_ave_deg > 360.0:
-        h_ave_deg -= 360.0
-
-    # 计算 dTheta
-    dTheta = 30.0 * math.exp(-(((h_ave_deg - 275.0) / 25.0) ** 2))
-
-    # 缓存 C_ave_final**7，用于后续计算 R_C
-    C_ave_final_pow7 = C_ave_final ** 7
-    R_C = 2.0 * math.sqrt(C_ave_final_pow7 / (C_ave_final_pow7 + C_25_7))
-    S_C = 1 + 0.045 * C_ave_final
-    S_H = 1 + 0.015 * C_ave_final * T
-
-    Lm50s = (L_ave - 50.0) ** 2
-    S_L = 1 + 0.015 * Lm50s / math.sqrt(20.0 + Lm50s)
-    R_T = -math.sin(dTheta * math.pi / 90.0) * R_C
-
-    # 归一化亮度、色度和色相差
-    f_L = dL_ / S_L
-    f_C = dC_ / S_C
-    f_H = dH_ / S_H
-
-    dE_00 = math.sqrt(f_L * f_L + f_C * f_C + f_H * f_H + R_T * f_C * f_H)
-    dC_00 = math.sqrt(f_C * f_C + f_H * f_H + R_T * f_C * f_H)
-    return dE_00, dC_00
-
-def process_file_or_folder(input_path, extension, func, *args, **kwargs):
-    """
-    通用方法：判断 input_path 是文件还是文件夹，并执行 func 处理。
     
-    :param input_path: 文件或文件夹路径
-    :param func: 需要执行的处理函数（可自定义参数）
-    :param *args: 额外的 *args 参数，会传递给 func
-    :param **kwargs: 额外的 **kwargs 参数，会传递给 func
-    """
-    input_path = Path(input_path)
-    if input_path.is_file():
-        func(input_path, *args, **kwargs)
+    elif brightness_type.lower() == 'GR'.lower():
+        _, gr, _, _ = split_channel(image, bayer_pattern)
+        row_start, row_end, col_start, col_end = get_rect((center_xy[0] // 2, center_xy[1] // 2), (roi_size[0] // 2, roi_size[1] // 2))
+        brightness = gr[row_start: row_end, col_start: col_end]
+        return brightness
     
-    elif input_path.is_dir():  # 检查是否是目录
-        for file_path in input_path.iterdir():  # 遍历目录下的所有文件/文件夹
-            if file_path.is_file() and file_path.suffix == extension:  # 检查是否是指定后缀的文件
-                func(file_path, *args, **kwargs) 
+    elif brightness_type.lower() == 'G'.lower():
+        _, gr, gb, _ = split_channel(image, bayer_pattern)
+        g = (gr + gb) * 0.5
+        row_start, row_end, col_start, col_end = get_rect((center_xy[0] // 2, center_xy[1] // 2), (roi_size[0] // 2, roi_size[1] // 2))
+        brightness = g[row_start: row_end, col_start: col_end]
+        return brightness
+    else:
+        raise KeyError(f'auto_exposure: unsupport brightness type: {brightness_type}')
+
+def process_files(input_path, func, extension, *args, **kwargs):
+    input_path = os.path.abspath(input_path)  # 获取绝对路径
+
+    if os.path.isfile(input_path):
+        func(input_path, *args, **kwargs)  # 直接调用函数处理单个文件
+
+    elif os.path.isdir(input_path):  # 检查是否是目录
+        for file_name in os.listdir(input_path):  # 遍历目录下的所有文件/文件夹
+            full_path = os.path.join(input_path, file_name)  # 获取完整路径
+            if os.path.isfile(full_path) and os.path.splitext(full_path)[1] == extension:  # 检查后缀名
+                func(full_path, *args, **kwargs)  # 处理符合条件的文件
     
 class time_block:
     """用于测量代码块执行时间的上下文管理器"""
@@ -465,3 +374,123 @@ def time_it_avg(repeats=3):
             return result  # 返回原始函数的执行结果
         return wrapper
     return decorator
+
+#region                 
+# @njit
+# def calcu_ciede2000(Lab_1, Lab_2):
+#     # 预计算常量
+#     C_25_7 = 6103515625.0  # 25**7
+#     two_pi = 2 * math.pi
+#     pi_6 = math.pi / 6.0
+#     pi_30 = math.pi / 30.0
+#     deg63 = 63 * math.pi / 180.0
+
+#     # 解包 Lab 值
+#     L1 = Lab_1[0]
+#     a1 = Lab_1[1]
+#     b1 = Lab_1[2]
+#     L2 = Lab_2[0]
+#     a2 = Lab_2[1]
+#     b2 = Lab_2[2]
+
+#     # 初始计算色度
+#     C1 = math.sqrt(a1 * a1 + b1 * b1)
+#     C2 = math.sqrt(a2 * a2 + b2 * b2)
+#     C_ave_init = (C1 + C2) / 2.0
+#     # 计算 G 因子，缓存 C_ave_init**7
+#     C_ave_init_pow7 = C_ave_init ** 7
+#     G = 0.5 * (1 - math.sqrt(C_ave_init_pow7 / (C_ave_init_pow7 + C_25_7)))
+
+#     # 计算调整后的 a 值，不变的 L 和 b
+#     a1_ = (1 + G) * a1
+#     a2_ = (1 + G) * a2
+#     L1_, L2_ = L1, L2
+#     b1_, b2_ = b1, b2
+
+#     # 计算新的色度
+#     C1_ = math.sqrt(a1_ * a1_ + b1_ * b1_)
+#     C2_ = math.sqrt(a2_ * a2_ + b2_ * b2_)
+
+#     # 计算色相角 h
+#     if a1_ == 0.0 and b1_ == 0.0:
+#         h1_ = 0.0
+#     else:
+#         h1_ = math.atan2(b1_, a1_)
+#         if h1_ < 0:
+#             h1_ += two_pi
+
+#     if a2_ == 0.0 and b2_ == 0.0:
+#         h2_ = 0.0
+#     else:
+#         h2_ = math.atan2(b2_, a2_)
+#         if h2_ < 0:
+#             h2_ += two_pi
+
+#     # 计算亮度差、色度差
+#     dL_ = L2_ - L1_
+#     dC_ = C2_ - C1_
+
+#     # 计算色相差
+#     dh_ = h2_ - h1_
+#     if C1_ * C2_ == 0.0:
+#         dh_ = 0.0
+#     else:
+#         if dh_ > math.pi:
+#             dh_ -= two_pi
+#         elif dh_ < -math.pi:
+#             dh_ += two_pi
+#     dH_ = 2.0 * math.sqrt(C1_ * C2_) * math.sin(dh_ / 2.0)
+
+#     # 计算平均亮度和平均色度（使用调整后的色度）
+#     L_ave = (L1_ + L2_) / 2.0
+#     C_ave_final = (C1_ + C2_) / 2.0
+
+#     # 计算平均色相
+#     dh_abs = abs(h1_ - h2_)
+#     sh_sum = h1_ + h2_
+#     if C1_ * C2_ == 0.0:
+#         h_ave = h1_ + h2_
+#     else:
+#         if dh_abs <= math.pi:
+#             h_ave = (h1_ + h2_) / 2.0
+#         else:
+#             if sh_sum < two_pi:
+#                 h_ave = (h1_ + h2_) / 2.0 + math.pi
+#             else:
+#                 h_ave = (h1_ + h2_) / 2.0 - math.pi
+
+#     # 计算 T 因子（使用预计算常量）
+#     T = (1 - 0.17 * math.cos(h_ave - pi_6)
+#          + 0.24 * math.cos(2.0 * h_ave)
+#          + 0.32 * math.cos(3.0 * h_ave + pi_30)
+#          - 0.2 * math.cos(4.0 * h_ave - deg63))
+
+#     # 将 h_ave 转换为角度并归一化
+#     h_ave_deg = h_ave * 180.0 / math.pi
+#     if h_ave_deg < 0.0:
+#         h_ave_deg += 360.0
+#     elif h_ave_deg > 360.0:
+#         h_ave_deg -= 360.0
+
+#     # 计算 dTheta
+#     dTheta = 30.0 * math.exp(-(((h_ave_deg - 275.0) / 25.0) ** 2))
+
+#     # 缓存 C_ave_final**7，用于后续计算 R_C
+#     C_ave_final_pow7 = C_ave_final ** 7
+#     R_C = 2.0 * math.sqrt(C_ave_final_pow7 / (C_ave_final_pow7 + C_25_7))
+#     S_C = 1 + 0.045 * C_ave_final
+#     S_H = 1 + 0.015 * C_ave_final * T
+
+#     Lm50s = (L_ave - 50.0) ** 2
+#     S_L = 1 + 0.015 * Lm50s / math.sqrt(20.0 + Lm50s)
+#     R_T = -math.sin(dTheta * math.pi / 90.0) * R_C
+
+#     # 归一化亮度、色度和色相差
+#     f_L = dL_ / S_L
+#     f_C = dC_ / S_C
+#     f_H = dH_ / S_H
+
+#     dE_00 = math.sqrt(f_L * f_L + f_C * f_C + f_H * f_H + R_T * f_C * f_H)
+#     dC_00 = math.sqrt(f_C * f_C + f_H * f_H + R_T * f_C * f_H)
+#     return dE_00, dC_00
+#endregion

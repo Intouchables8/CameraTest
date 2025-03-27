@@ -88,13 +88,12 @@ sfr:
     canny_thresh: [20, 30]
     blur_size: [5, 5]
     n_block: 8
-    block_thresh: [1800, 2800]
+    block_thresh: [1500, 2600]
     n_half_block: 4
-    half_block_thresh: [350, 850
-    ] 
+    half_block_thresh: [200, 650] 
     half_bloack_dist_from_center: [155, 179]
     n_point: 5
-    point_thresh: [80, 130]
+    point_thresh: [45, 75]
     point_dist_from_center: [115, 125]
     inner_block_thresh: [150, 200]
     delta_angle: 25

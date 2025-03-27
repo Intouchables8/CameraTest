@@ -1,6 +1,5 @@
-import numpy as np
 from Common import utils
-
+import numpy as np
 
 def select_point_california(centroid, center_xy, n_point, point_dist_from_center, clockwise, local_debug=False):
     '''
@@ -42,8 +41,6 @@ def select_point_cv(centroid, center_xy, n_point, point_dist_from_center, clockw
     sorted_point.extend(point_centroid[sorted_index]) 
     return sorted_point
     
-
-
 def rotation_rgb(point_xy_0, point_xy_1, point_xy_2, point_xy_3, point_xy_4):
     '''
     #      2

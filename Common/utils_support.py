@@ -1,18 +1,7 @@
-import os
 import numpy as np
-from dotenv import load_dotenv
 import cv2
 from types import SimpleNamespace
-import sys
-# 加载env
-load_dotenv()
-DEFAULT_LOG_PATH = 'log.log'
-LOG_PATH = os.getenv("LOG_PATH", DEFAULT_LOG_PATH)
-root_dir = os.getenv("ROOTPATH")
-root_dir = os.path.abspath(root_dir)  # 解析相对路径为绝对路径
-# 确保 Python 可以正确 import 其他模块
-if root_dir not in sys.path:
-    sys.path.insert(0, root_dir)
+import os
 
 def dict_to_obj(d):
     if isinstance(d, dict):
@@ -25,7 +14,7 @@ def dict_to_obj(d):
 def read_rgb(file_name):
     image = cv2.imread(file_name)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    device_id = file_name.stem
+    device_id = os.path.splitext(os.path.basename(file_name))[0]
     return image, device_id
 
 # read_raw8():
@@ -33,15 +22,16 @@ def read_rgb(file_name):
 def read_raw10(file_name, image_size):
     raw = np.fromfile(file_name, np.uint16)
     image = raw[:image_size[0] * image_size[1]].reshape(image_size)
-    device_id = file_name.stem
+    device_id = os.path.splitext(os.path.basename(file_name))[0]
     return image, device_id
     
 def read_mipi10(file_name, image_size):
+    
     rows, cols = image_size
     width = (cols * 10) // 8
     height = rows
     mipi_data = np.fromfile(file_name, dtype=np.uint8)
-    device_id = file_name.stem
+    device_id = os.path.splitext(os.path.basename(file_name))[0]
     
     mipi_data = mipi_data.reshape(height, -1)
     mipi_data = mipi_data[:, :width]

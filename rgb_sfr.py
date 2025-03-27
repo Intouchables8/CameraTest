@@ -1,15 +1,14 @@
 from Common import utils
-from Script.sfr import SFR
-from pathlib import Path
+from Project.RGB import sfr
+import os
 import numpy as np
 from Customize import sfr_funcion
+
 class CalSFR:
     def __init__(self, config_path):
-        self.sfr = SFR(config_path, 3)
+        self.sfr = sfr.SFR(config_path, 3)
     
     def func(self, file_name, save_path, distance):
-        file_name = Path(file_name)
-        save_path = Path(save_path)
         image = utils.load_image(file_name, self.sfr.image_tpye, self.sfr.image_size, self.sfr.crop_tblr)
         if self.sfr.sub_black_level:
             image = utils.sub_black_level(image, self.sfr.black_level)
@@ -83,14 +82,13 @@ class CalSFR:
                 f'SFR_{distance}cm_Tilt X': tilt_x * degree_2_rad,
                 f'SFR_{distance}cm_Tilt Y': tilt_y * degree_2_rad,  
         }
+        
         device_id = utils.GlobalConfig.get_device_id()
-        save_file_name = save_path / (device_id + '.csv')
-        utils.save_dict_to_csv(data, save_file_name)
+        os.makedirs(save_path, exist_ok=True)
+        save_file_name = os.path.join(save_path, (device_id + '.csv'))
+        utils.save_dict_to_csv(data, str(save_file_name))
 
-        
-        
-        
-        
+            
 if __name__ == '__main__':
     file_name = r'E:\Wrok\ERS\Diamond RGB\Module Images (for algo correlation)\SFR\20241128_140047_AS_SFRVerify300_377TT03G9K001J.raw'
     save_path = r'E:\Wrok\ERS\Diamond RGB\Module Images (for algo correlation)\SFR'

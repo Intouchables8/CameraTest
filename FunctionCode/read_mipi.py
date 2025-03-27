@@ -1,8 +1,8 @@
 import cv2
 import numpy as np
-from pathlib import Path
+import os
 import sys
-ROOTPATH = Path(__file__).parent.parent.parent
+ROOTPATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")).parent
 sys.path.append(str(ROOTPATH))
 from Common import utils
 
@@ -11,7 +11,7 @@ def read_mipi(file_name, rows, cols, save_path, output_type, crop_tblr):
     height = rows
     
     mipi_data = np.fromfile(file_name, dtype=np.uint8)
-    device_id = file_name.stem
+    device_id = os.path.splitext(os.path.basename(file_name))[0]
     
     mipi_data = mipi_data.reshape(height, -1)
     mipi_data = mipi_data[:, :width]
@@ -32,18 +32,22 @@ def read_mipi(file_name, rows, cols, save_path, output_type, crop_tblr):
     
     image = raw_data.reshape(rows, cols)
     
+    
+    
+    os.makedirs(save_path, exist_ok=True)
     if 'png' in output_type:
-        save_file_path = save_path / (device_id + '.png')
+
+        save_file_path = os.path.join(save_path, (device_id + '.png'))
         image = (image >> 2).astype(np.uint8)
         cv2.imwrite(save_file_path, image)
     else:
         image = utils.crop_image(image, crop_tblr)
-        save_file_path = save_path / (device_id + '.raw')
+        save_file_path = os.path.join(save_path, (device_id + '.raw'))
         image.tofile(save_file_path)
     
 
 def mipi_2_type(file_name, rows, cols, save_path, output_type, crop_tblr):
-    path = Path(file_name)
+    
     if path.is_file():
         read_mipi(file_name, rows, cols, save_path, output_type)
     elif path.is_dir():
@@ -60,5 +64,4 @@ if __name__ == '__main__':
     crop_tblr = [0, 0, 0, 48]
 
     save_path = utils.FilePath.generate_save_folder_name(file_name, 'result')
-    utils.FilePath.create_folder(save_path)
     mipi_2_type(file_name, rows, cols, save_path, output_type, crop_tblr)

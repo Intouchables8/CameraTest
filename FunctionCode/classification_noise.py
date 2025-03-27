@@ -106,15 +106,15 @@ print("复制完成！")
 
 #         # 遍历小文件夹中的所有文件
 #         for filename in os.listdir(sub_folder_path):
-#             file_path = os.path.join(sub_folder_path, filename)
+#             file_name = os.path.join(sub_folder_path, filename)
 
 #             # 只处理文件，不处理目录
-#             if os.path.isfile(file_path):
+#             if os.path.isfile(file_name):
 #                 if "dark" in filename.lower():
-#                     shutil.move(file_path, os.path.join(dark_folder, filename))
+#                     shutil.move(file_name, os.path.join(dark_folder, filename))
 #                 elif "light" in filename.lower():
-#                     shutil.move(file_path, os.path.join(light_folder, filename))
+#                     shutil.move(file_name, os.path.join(light_folder, filename))
 #                 elif "sfr" in filename.lower():
-#                     shutil.move(file_path, os.path.join(sfr_folder, filename))
+#                     shutil.move(file_name, os.path.join(sfr_folder, filename))
 
 # print("所有文件夹内的文件已分类完成！")

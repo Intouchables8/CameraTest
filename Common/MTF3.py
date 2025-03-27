@@ -1,6 +1,5 @@
 import numpy as np
-from .MTF3_CSupport import sfrmat3
-from .utils import *
+from Common import MTF3_CSupport
 # from .MTF3_Support import sfrmat3, calcny_freqMtf
 class MTF3:
     def __init__(self, ny_freq, gamma=1, interval_unit=1, weight=(0.2126,0.7152,0.0722),oecfname='none'):
@@ -14,7 +13,7 @@ class MTF3:
         mapped_list = [mapping[num] for num in ny_freq]
         self.ny_freq = mapped_list
         self.n_ny = len(ny_freq)
-        self.SFRclass = sfrmat3(gamma, interval_unit, weight, oecfname)
+        self.SFRclass = MTF3_CSupport.sfrmat3(gamma, interval_unit, weight, oecfname)
         # 执行相关代码
     def _calcu_mtf(self, roi):
         mtf_peak_percent = (0.5,)

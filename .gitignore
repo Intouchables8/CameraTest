@@ -1,6 +1,9 @@
-**/__pycache__/
-.idea
-result
-image
+__pycache__/
+.idea/
+result/
+image/
+.vs/
+x64/
+build/
 
 

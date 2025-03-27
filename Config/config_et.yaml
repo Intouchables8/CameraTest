@@ -1,3 +1,4 @@
+# 初始版本 20250326
 light:
   image_info:
     image_size: [400, 400]
@@ -86,12 +87,12 @@ sfr:
     max_radius: 250
     bw_mode: "FIX_THRESH"
     apply_hull: true
-    bw_thresh: 0.2
-    mask_erode_size: [15, 15]
+    bw_thresh: 0.25
+    mask_erode_size: [3, 3]
     canny_thresh: [20, 30]
     blur_size: (5, 5)
     n_block: 21
-    block_thresh: [850, 1300]
+    block_thresh: [750, 1300]
     n_half_block: 0
     half_block_thresh: [0, 0] 
     half_bloack_dist_from_center: [0, 0]
