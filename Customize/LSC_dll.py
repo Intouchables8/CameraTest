@@ -111,8 +111,6 @@ if __name__ == '__main__':
     file_name =r'E:\Wrok\ERS\Oregon\对标数据\light\CU\light field image.raw'
     image_size = (3024, 4032) # row col
     table_size = (17, 13)
-    size_factor = 8
-    mode = 0
     black_level = 64
     bayer_pattern = 'RGGB'
     image = utils.load_image(file_name, "RAW10", image_size)

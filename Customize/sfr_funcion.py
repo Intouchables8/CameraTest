@@ -147,15 +147,12 @@ def tilt_rgb(point_xy_1, point_xy_2, point_xy_3, point_xy_4):
     
     pass
 
-
 def pointing_oc_et(points_xy, center_xy):
     avg_xy = points_xy.mean(axis=0)
     offset_x = avg_xy[0] - center_xy[0]
     offset_y = avg_xy[1] - center_xy[1]
     oc_r = np.sqrt(offset_x**2 + offset_y**2)
     return offset_x, offset_y, oc_r
-
-
 
 def fov_et(points_xy, image_circle, fov_design, fov_ratio):
     '''
@@ -172,17 +169,13 @@ def fov_et(points_xy, image_circle, fov_design, fov_ratio):
     fov_d = ((4 * image_circle) / (dist_5_18 + dist_6_17)) * fov_design * fov_ratio
     return fov_d[0]
 
-
-
-
 def distortion_1():
     pass
 
 def brightness_1():
     pass
 
-
-
+#region
 # def FOV(self):
 #     rad = 180 / np.pi
 #     point69 = innr_block_center_xy[13]
@@ -327,6 +320,5 @@ def brightness_1():
 #     imageFileName = savePath / (deviceId +'_SFR_ROI.png')
 #     cv2.imwrite(imageFileName, rgb)                   
 #     return True
-
-
+#endregion
 
