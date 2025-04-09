@@ -4,10 +4,8 @@ ROOTPATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(str(ROOTPATH))
 from Common import utils
 
-
-
 def color_calibration(file_name, image_size, image_type, crop_tblr, bayer_pattern,color_temperture, sub_black_level, black_level, csv_output, save_path=None):
-    image = utils.load_image(str(file_name), image_type, image_size, crop_tblr)
+    image = utils.load_image(file_name, image_type, image_size, crop_tblr)
     r, gr, gb, b = utils.split_channel(image, bayer_pattern)
     rows, cols = r.shape
     cx, cy = rows // 2, cols // 2
@@ -41,7 +39,6 @@ def color_calibration(file_name, image_size, image_type, crop_tblr, bayer_patter
             }
     
     if csv_output:
-        
         os.makedirs(save_path, exist_ok=True)
         save_file_path = os.path.join(save_path, 'cc_data.csv')
         utils.save_dict_to_csv(data, str(save_file_path))

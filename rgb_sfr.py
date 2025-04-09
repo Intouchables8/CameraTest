@@ -21,7 +21,7 @@ class CalSFR:
         
         image_size = image.shape
         # 定位block
-        block_roi_center_xy, block_centroid, inner_block_center_xy, points_xy = self.sfr.localte_block_rgb(image, save_path)
+        block_roi_center_xy, block_centroid, inner_block_center_xy, _ = self.sfr.localte_block_rgb(image, save_path)
         
         # 选择roi
         all_roi_center_xy = self.sfr.select_roi(block_roi_center_xy, self.sfr.roi_index)

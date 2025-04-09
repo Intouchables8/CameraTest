@@ -17,7 +17,11 @@ def read_rgb(file_name):
     device_id = os.path.splitext(os.path.basename(file_name))[0]
     return image, device_id
 
-# read_raw8():
+def read_raw8(file_name, image_size):
+    raw = np.fromfile(file_name, np.uint8)
+    image = raw[:image_size[0] * image_size[1]].reshape(image_size)
+    device_id = os.path.splitext(os.path.basename(file_name))[0]
+    return image, device_id
     
 def read_raw10(file_name, image_size):
     raw = np.fromfile(file_name, np.uint16)

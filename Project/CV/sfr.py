@@ -6,7 +6,6 @@ import sys
 ROOTPATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.append(str(ROOTPATH))
 from Common import utils, MTF3
-from Customize import sfr_funcion
 class BinaryMode(Enum):
     CANNY = 'CANNY'
     FIX_THRESH = 'FIX_THRESH'
@@ -81,20 +80,14 @@ class SFR:
                 i += 1
         return block_corner__xy, block_roi_center_xy, inner_block_center_xy
         
-    def _visualize_all_points(self, block_roi_center_xy, points_xy, save_path):
+    def _visualize_all_points(self, block_roi_center_xy, save_path):
         index = 0
         for block in block_roi_center_xy:
             for roi_xy in block:
                 x, y = roi_xy
                 utils.draw_mark_with_text(self.rgb, x, y, str(index), text_size=self.text_size, mark_radius=self.thickness, text_thickness=self.thickness, text_offset_x=self.x_offset, text_offset_y=self.y_offset)
                 index += 1
-        
-        if points_xy:
-            index = 0
-            for point_xy in points_xy:
-                x, y = point_xy
-                utils.draw_mark_with_text(self.rgb, x, y, str(index), mark_radius=self.thickness, text_color=(0,255,255), text_size=self.text_size, text_thickness=self.thickness, text_offset_x=self.x_offset, text_offset_y=self.y_offset)
-                index += 1
+
         save_image_path = os.path.join(save_path, (utils.GlobalConfig.get_device_id() + '_sfr_points.png'))
         cv2.imwrite(save_image_path, self.rgb)
 
@@ -158,18 +151,6 @@ class SFR:
             bw_image = ~bw_image
         return bw_image
 
-    def _find_connected_area(self, image, thresh, info=None, count=0):
-        _, _, stats, centroids = cv2.connectedComponentsWithStats(image, connectivity=8)
-        index = np.where((stats[1:, 4] > thresh[0]) & (stats[1:, 4] < thresh[1]))[0] + 1
-        if self.debug_flag:
-            print(f'{info} area: {np.sort(stats[1:, 4])}, \n thresh: {thresh}')
-        if count != 0 and count != len(index):
-            raise KeyError(f'locate_block: only find {len(index)} blocks, {count} needed!')
-        
-        valid_stats = stats[index]
-        valid_centroid = centroids[index]
-        return valid_stats, valid_centroid
-
     def _select_half_block_dist(self, stats, centroid, center_xy, delta_dist, n_half_block):
         dist = utils.calcu_distance(centroid, center_xy)
         if self.debug_flag:
@@ -194,7 +175,7 @@ class SFR:
         inner_center_flag = False
         if np.any(np.array(self.inner_block_thresh) != 0):
             inner_center_flag = True
-            _, centroid = self._find_connected_area(~bw_block, self.inner_block_thresh, 'Inner block')
+            _, centroid = self.find_connected_area(~bw_block, self.inner_block_thresh, 'Inner block')
             if len(centroid) > 0:
                 dist = utils.calcu_distance(centroid, (block_size[1] // 2, block_size[0] // 2))
                 center_index = np.argmin(dist)
@@ -314,6 +295,18 @@ class SFR:
         
         return grouped_indices
 
+    def find_connected_area(self, image, thresh, info=None, count=0):
+        _, _, stats, centroids = cv2.connectedComponentsWithStats(image, connectivity=8)
+        index = np.where((stats[1:, 4] > thresh[0]) & (stats[1:, 4] < thresh[1]))[0] + 1
+        if self.debug_flag:
+            print(f'{info} area: {np.sort(stats[1:, 4])}, \n thresh: {thresh}')
+        if count != 0 and count != len(index):
+            raise KeyError(f'locate_block: only find {len(index)} blocks, {count} needed!')
+        
+        valid_stats = stats[index]
+        valid_centroid = centroids[index]
+        return valid_stats, valid_centroid
+    
     def localte_block_california(self, image, save_path):
         '''
         图像中心存在block， 所有block完整且不连接
@@ -324,7 +317,7 @@ class SFR:
         bw_image = self._preprocess_image(image)
         
         # 获取bbox 和 质心
-        block_stats, valid_centroid = self._find_connected_area(bw_image, self.block_thresh, 'Block', self.n_block)
+        block_stats, valid_centroid = self.find_connected_area(bw_image, self.block_thresh, 'Block', self.n_block)
         
         # 质心到圆心的距离
         dist_from_center = utils.calcu_distance(valid_centroid, center_xy)
@@ -344,31 +337,22 @@ class SFR:
         # 定位所有block相关坐标
         block_corner__xy, block_roi_center_xy, inner_block_center_xy = self._locate_all_block(image, block_stats, group_sorted_index, self.n_block, self.long_side)
         
-        # 定位所有point相关坐标
-        points_xy = None
-        if self.n_point > 0:
-            chart_center_xy = block_centroid[0][0]
-            _, centroid =self. _find_connected_area(bw_image, self.point_thresh, 'Point')
-            points_xy = sfr_funcion.select_point_california(centroid, chart_center_xy, self.n_point, self.point_dist_from_center, self.clockwise, self.debug_flag)
-        
         # ROI 中心示意图， 用于后续选择ROI
         if self.debug_flag:
-            
             os.makedirs(save_path, exist_ok=True)
-            self._visualize_all_points(block_roi_center_xy, points_xy, save_path)
-        return block_roi_center_xy, block_centroid, inner_block_center_xy, points_xy
+            self._visualize_all_points(block_roi_center_xy, save_path)
+        return block_roi_center_xy, block_centroid, inner_block_center_xy, bw_image
 
     def localte_block_rgb(self, image, save_path):
         '''
         图像按照行列均匀排列
         '''
         image_size = image.shape
-        center_xy = (image_size[1] // 2, image_size[0] // 2)
         # 预处理
         bw_image = self._preprocess_image(image)
         
         # 获取bbox 和 质心
-        block_stats, valid_centroid = self._find_connected_area(bw_image, self.block_thresh, 'Block', self.n_block)
+        block_stats, valid_centroid = self.find_connected_area(bw_image, self.block_thresh, 'Block', self.n_block)
         
         group_index = SFR._group_and_sort_indices(valid_centroid, image_size[0] // 15)
         index = []
@@ -379,14 +363,11 @@ class SFR:
         # 定位所有block相关坐标
         block_corner__xy, block_roi_center_xy, inner_block_center_xy = self._locate_all_block(image, block_stats, index, self.n_block, self.long_side)
         
-
         # ROI 中心示意图， 用于后续选择ROI
-        points_xy = None
         if self.debug_flag:
-            
             os.makedirs(save_path, exist_ok=True)
-            self._visualize_all_points(block_roi_center_xy, points_xy, save_path)
-        return block_roi_center_xy, block_centroid, inner_block_center_xy, points_xy
+            self._visualize_all_points(block_roi_center_xy, save_path)
+        return block_roi_center_xy, block_centroid, inner_block_center_xy, bw_image
 
     def locate_block_cv(self, image, save_path):
         '''
@@ -397,16 +378,8 @@ class SFR:
         # 预处理
         bw_image = self._preprocess_image(image)
         
-        # 定位所有point相关坐标
-        points_xy = None
-        if self.n_point > 0:
-            _, centroid =self. _find_connected_area(bw_image, self.point_thresh, 'Point')
-            index = np.argmin(utils.calcu_distance(centroid, center_xy))
-            chart_center_xy = centroid[index]
-            points_xy = sfr_funcion.select_point_cv(centroid, chart_center_xy, self.n_point, self.point_dist_from_center, self.clockwise, self.debug_flag)
-        
         # 获取bbox 和 质心
-        block_stats, valid_centroid = self._find_connected_area(bw_image, self.block_thresh, 'Block', self.n_block)
+        block_stats, valid_centroid = self.find_connected_area(bw_image, self.block_thresh, 'Block', self.n_block)
         
         # 质心到圆心的距离
         dist_from_center = utils.calcu_distance(valid_centroid, center_xy)
@@ -427,23 +400,21 @@ class SFR:
         block_corner_xy, block_roi_center_xy, inner_block_center_xy = self._locate_all_block(image, block_stats, group_sorted_index, self.n_block, self.long_side)
 
         # 计算half
-        half_block_stats, half_centroid = self._find_connected_area(bw_image, self.half_block_thresh, 'Half Block')
+        half_block_stats, half_centroid = self.find_connected_area(bw_image, self.half_block_thresh, 'Half Block')
+        chart_center_xy = center_xy
         half_block_stats, half_centroid = self._select_half_block_dist(half_block_stats, half_centroid, chart_center_xy, self.half_bloack_dist_from_center, self.n_half_block)
         sorted_index = utils.sort_order_index(half_centroid, center_xy, self.delta_angle, self.clockwise)
         half_block_corner_xy, half_block_roi_center_xy, half_inner_block_center_xy = self._locate_all_block(image, half_block_stats, sorted_index, self.n_half_block, 0)
-
         block_roi_center_xy.extend(half_block_roi_center_xy)
         
         # ROI 中心示意图， 用于后续选择ROI
         if self.debug_flag:
-            
             os.makedirs(save_path, exist_ok=True)
-            self._visualize_all_points(block_roi_center_xy, points_xy, save_path)
-        
-        return block_roi_center_xy, block_centroid, inner_block_center_xy, _
+            self._visualize_all_points(block_roi_center_xy, save_path)
+        return block_roi_center_xy, block_centroid, inner_block_center_xy, bw_image
     
     def get_roi_rect(self, bw_image, all_roi_center):
-        test_size = 20
+        test_size = 10
         n_roi = len(all_roi_center)
         all_rect = np.zeros((n_roi, 4), dtype=np.uint16)
         half_short = self.short_side // 2
@@ -483,11 +454,19 @@ class SFR:
             os.makedirs(save_path, exist_ok=True)
         
         if self.csv_output:
+            sperate_fre = True
             data = [utils.GlobalConfig.get_device_id(),]
             name = ['Device ID',]
-            for i, mtf in enumerate(mtf_data):
-                name.extend([f"ROI{i+1}_Ny_{num}" for num in self.ny_freq])
-                data.extend([str(100*value) for value in mtf])        
+            
+            if sperate_fre and len(self.ny_freq) > 1:
+                for fre_index in range(len(self.ny_freq)):
+                    for i, mtf in enumerate(mtf_data):
+                        name.append(f"ROI{i+1}_Ny_{self.ny_freq[fre_index]}")
+                        data.append(str(100*mtf[fre_index]))   
+            else:
+                for i, mtf in enumerate(mtf_data):
+                    name.extend([f"ROI{i+1}_Ny_{num}" for num in self.ny_freq])
+                    data.extend([str(100*value) for value in mtf])        
             save_file_name = os.path.join(save_path, 'sfr_data.csv')
             utils.save_lists_to_csv(data, name, save_file_name)
         

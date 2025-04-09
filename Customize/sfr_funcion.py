@@ -40,7 +40,42 @@ def select_point_cv(centroid, center_xy, n_point, point_dist_from_center, clockw
     sorted_point = [center_xy,]
     sorted_point.extend(point_centroid[sorted_index]) 
     return sorted_point
+
+def select_point_et(image, center_xy, thresh, points_offset_xy, points_roi_size, n_point, point_dist_from_center, clockwise, debug_flag=False):
+    '''
+    1     2
     
+    3     4
+    
+    '''
+    center_xy = [round(center_xy[0]), round(center_xy[1])]
+    tl_center = [center_xy[0] - points_offset_xy[0], center_xy[1] - points_offset_xy[1]]
+    tr_center = [center_xy[0] + points_offset_xy[0], center_xy[1] - points_offset_xy[1]]
+    bl_center = [center_xy[0] - points_offset_xy[0], center_xy[1] + points_offset_xy[1]]
+    br_center = [center_xy[0] + points_offset_xy[0], center_xy[1] + points_offset_xy[1]]
+    center_roi_xy = [points_roi_size[0] // 2, points_roi_size[1] // 2]
+    def calcu_coord_delta(cur_center, roi_size, thresh, center_roi_xy):
+        row_start, row_end, col_start, col_end = utils.get_rect(cur_center, roi_size)
+        _, centroid = utils.find_connected_area(image[row_start: row_end, col_start: col_end], thresh, info='points', debug_flag=False)
+        if len(centroid) == 0:
+            raise TypeError('ERROR', f'select point:  cant find points thresh:{thresh}')
+        if len(centroid) > 1:
+            dists = utils.calcu_distance(centroid, center_roi_xy)
+            index = np.argmin(dists)
+            center = centroid[index]
+        else:
+            center = centroid[0]
+        delta_xy = [center[0] - center_roi_xy[0], center[1] - center_roi_xy[1]]
+        real_xy = np.array(cur_center) + np.array(delta_xy)
+        return real_xy
+    
+    tl = calcu_coord_delta(tl_center, points_roi_size, thresh, center_roi_xy)
+    tr = calcu_coord_delta(tr_center, points_roi_size, thresh, center_roi_xy)
+    ll = calcu_coord_delta(bl_center, points_roi_size, thresh, center_roi_xy)
+    lr = calcu_coord_delta(br_center, points_roi_size, thresh, center_roi_xy)
+    points_xy = np.array([tl,tr,ll,lr])
+    return points_xy
+     
 def rotation_rgb(point_xy_0, point_xy_1, point_xy_2, point_xy_3, point_xy_4):
     '''
     #      2
@@ -57,6 +92,26 @@ def rotation_rgb(point_xy_0, point_xy_1, point_xy_2, point_xy_3, point_xy_4):
     rotation_4 = np.arctan((point_xy_4[0] - point_xy_0[0]) / (point_xy_4[1] - point_xy_0[1])) 
     rotation = (rotation_1 + rotation_2 + rotation_3 + rotation_4) * 0.25
     return rotation, rotation_1, rotation_2, rotation_3, rotation_4
+
+def rotation_et(points_xy):
+    '''
+    1     2
+
+    3     4
+    也就是
+    5      6
+    
+    17     18
+    '''
+    point5 = points_xy[0]
+    point6 = points_xy[1]
+    point17 = points_xy[2]
+    point18 = points_xy[3]
+    
+    Rotation_TL_BR = np.arctan((point5[1] - point18[1])/(point5[0] - point18[0])) - np.arctan(1)
+    Rotation_TR_BL = np.arctan(1) - np.abs(np.arctan((point6[1] - point17[1])/(point6[0] - point17[0])))
+    Rotation_Mean = (Rotation_TL_BR + Rotation_TR_BL) * 0.5
+    return Rotation_TL_BR, Rotation_TR_BL, Rotation_Mean
 
 def fov_rgb(point_xy_1, point_xy_2, point_xy_3, point_xy_4, image_size, length_h_real_mm, length_v_real_mm, chart_distance):
     length_h_12 = utils.calcu_distance(point_xy_1, point_xy_2)
@@ -92,8 +147,31 @@ def tilt_rgb(point_xy_1, point_xy_2, point_xy_3, point_xy_4):
     
     pass
 
-def pointing_oc_1():
-    pass
+
+def pointing_oc_et(points_xy, center_xy):
+    avg_xy = points_xy.mean(axis=0)
+    offset_x = avg_xy[0] - center_xy[0]
+    offset_y = avg_xy[1] - center_xy[1]
+    oc_r = np.sqrt(offset_x**2 + offset_y**2)
+    return offset_x, offset_y, oc_r
+
+
+
+def fov_et(points_xy, image_circle, fov_design, fov_ratio):
+    '''
+    1    2
+
+    3    4
+    也就是
+    5      6
+    
+    17     18
+    '''
+    dist_5_18 = utils.calcu_distance(points_xy[0], points_xy[3])
+    dist_6_17 = utils.calcu_distance(points_xy[1], points_xy[2])
+    fov_d = ((4 * image_circle) / (dist_5_18 + dist_6_17)) * fov_design * fov_ratio
+    return fov_d[0]
+
 
 
 
@@ -102,8 +180,6 @@ def distortion_1():
 
 def brightness_1():
     pass
-
-
 
 
 

@@ -1,85 +1,10 @@
 # 初始版本 20250326
-light:
-  image_info:
-    image_size: [400, 400]
-    crop_tblr: [0, 0, 0, 0]
-    bayer_pattern: "Y"
-    image_type: "RAW10"
-    sub_black_level: True
-    black_level: 64
-  
-  relative_illumination:
-    sub_black_level: True
-    input_pattern: "Y"  
-    mask_radius: 200
-    roi_size: [10, 10]
-    snr_roi_size: [10, 10]
-    border_distance: 0
-    csv_output: true 
-    debug_flag: true
-  
-  optical_center:
-    sub_black_level: True
-    input_pattern: "Y"  
-    thresh: 0.9
-    csv_output: true 
-
-  defect_pixel_light:
-    sub_black_level: True
-    input_pattern: "Y"  
-    mask_radius: 200
-    roi_size: [11, 11]
-    thresh: 0.3
-    csv_output: true 
-    debug_flag: true
-
-  defect_row_col_light:
-    sub_black_level: True
-    input_pattern: "Y"  
-    mask_radius: 200
-    thresh: 2
-    neighbor: 0
-    min_pixel: 10
-    csv_output: true 
-    debug_flag: true
-
-  relative_uniformity:
-    sub_black_level: True
-    input_pattern: "Y"  
-    mask_radius: 200
-    roi_size: [10, 10]
-    border_distance: 0
-    delta_angle: 45
-    csv_output: true 
-    debug_flag: true
-
-  blemish:
-    image_size: [400, 400]
-    down_scale_factor: 1  
-    kernel_size: [25, 25]  
-    morph: False
-    morph_kern: [0, 0]
-    poly_degree: 6
-    side_mask: 20          
-    mask_radius: 200    
-    denoise_sigma: 2.5       
-    threshold_m: 4
-    threshold_n:  0
-    threshold_min_max: [2, 8]   
-    min_area: 1
-    input_pattern: "Y"
-    seg_dir: 1
-    sub_black_level: True
-    black_level: 64
-    debug_flag: true
-    dpi: 50
-
 sfr:
   image_info:
     image_size: [400, 400]
     crop_tblr: [0, 0, 0, 0]
     bayer_pattern: "Y"
-    image_type: "RAW10"
+    image_type: "RAW8"
     sub_black_level: false
     black_level: 64
     
@@ -91,14 +16,14 @@ sfr:
     mask_erode_size: [3, 3]
     canny_thresh: [20, 30]
     blur_size: (5, 5)
-    n_block: 21
-    block_thresh: [750, 1300]
+    n_block: 17
+    block_thresh: [750, 1350]
     n_half_block: 0
     half_block_thresh: [0, 0] 
     half_bloack_dist_from_center: [0, 0]
     n_point: 0
-    point_thresh: [600, 1100]
-    point_dist_from_center: [1370, 1470]
+    point_thresh: [3, 25]
+    point_dist_from_center: [160, 180]
     inner_block_thresh: [0, 0]
     delta_angle: 15
     roi_size: [24, 24]
@@ -109,61 +34,23 @@ sfr:
     x_offset: 3
     y_offset: 10
   
+  customized_params:
+    points_offset_xy: [120, 120]
+    points_roi_size: [60, 60]
+    image_circle: 200
+    fov_design: 100
+    fov_ratio: 0.8
+  
   select_roi:
-    roi_inex: [1,2,3,4,5,6,7,8,9,10,
-              11,12,13,14,15,16,17,18,19,20,
-              21,22,23,24,25,26,27,28,29,30,
-              31,32,33,34,35,36,37,38,39,40,
-              41,42,43,44,45,46,47,48,49,50,
-              51,52,53,54,55,56,57,58,59,60,
-              61,62,63,64,65,66,67,68,69,70,
-              71,72,73,74,75,76,77,78,79,80,
-              81,82,83]
+    roi_inex: [0,1,2,3,
+              4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,
+              20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,
+              36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,
+              52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67
+              ]
   
   mtf:
     ny_freq: [2, 4]
     debug_flag: true
     text_value: false
     csv_output: true
-
-dark:
-  image_info:
-    image_size: [400, 400]
-    crop_tblr: [0, 0, 0, 0]
-    bayer_pattern: "Y"
-    image_type: "RAW10"
-    sub_black_level: false
-    black_level: 64
-
-  defect_pixel_dark:
-    image_count: 1
-    input_pattern: "Y"
-    sub_black_level: false
-    thresh: 35
-    csv_output: true 
-    debug_flag: true
-    distribution: false
-  
-  DSNU:
-    roi_size: [16, 16]
-    image_count: 1
-    except_dpd: false
-    csv_output: true 
-    debug_flag: true
-    
-  defect_row_col_dark:
-    image_count: 1
-    input_pattern: "Y"
-    sub_black_level: false
-    thresh: 2
-    neighbor: 0
-    csv_output: true 
-    debug_flag: true
-    
-
-  dark_noise:
-    image_count: 5
-    sub_black_level: false
-    csv_output: true 
-
-

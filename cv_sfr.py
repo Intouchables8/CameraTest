@@ -1,5 +1,6 @@
 from Common import utils
 from Project.CV import sfr
+from Customize import sfr_funcion
 import numpy as np
 class CalSFR:
     def __init__(self, config_path):
@@ -17,8 +18,15 @@ class CalSFR:
             image = (image >> 2).astype(np.uint8)
         
         # 定位block
-        block_roi_center_xy, block_centroid, inner_block_center_xy, points_xy = self.sfr.locate_block_cv(image, save_path)
+        block_roi_center_xy, _, _, bw_image = self.sfr.locate_block_cv(image, save_path)
         
+        # 定位所有point相关坐标
+        center_xy = (self.sfr.image_size[1] // 2, self.sfr.image_size[0] // 2)
+        _, centroid =self.sfr.find_connected_area(bw_image, self.sfr.point_thresh, 'Point')
+        index = np.argmin(utils.calcu_distance(centroid, center_xy))
+        chart_center_xy = centroid[index]
+        points_xy = sfr_funcion.select_point_cv(centroid, chart_center_xy, self.sfr.n_point, self.sfr.point_dist_from_center, self.sfr.clockwise, self.sfr.debug_flag)
+    
         # 选择roi
         all_roi_center_xy = self.sfr.select_roi(block_roi_center_xy, self.sfr.roi_index)
         

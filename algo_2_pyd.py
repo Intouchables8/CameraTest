@@ -16,7 +16,6 @@ def pack_item(params, name, encrypt, item, target_dir):
         convert_2_pyd(f"./{name}_{item}.py", target_dir, encrypt)
         print(f'✅{name}_{item} -->> : {target_dir}  encrypt: {encrypt}')
     
-
 def pack_algo_2_pyd(params, target_dir):
     name = params['name']
     encrypt = params['encrypt']
@@ -37,7 +36,6 @@ def pack_algo_2_pyd(params, target_dir):
         
     if build_dir.exists():
         shutil.rmtree(build_dir)  # 递归删除
-
 
 if __name__ == '__main__':
     params = {'name':Project.CV.value,'light':True, 'sfr':True, 'dark':True, 'config':True, 'encrypt':True}

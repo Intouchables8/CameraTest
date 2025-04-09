@@ -43,6 +43,8 @@ def draw_rect_with_text(image, x, y, w, h, text, rect_color=(0, 255, 0), rect_th
     cv2.putText(image, str(text), (x + text_offset_x, y + text_offset_y), cv2.FONT_HERSHEY_SIMPLEX, text_size, text_color, text_thickness)
 
 def calcu_distance(points_xy, center_xy):
+    if points_xy.ndim == 1:
+        points_xy = points_xy.reshape(1, -1)
     distance = np.sqrt(np.sum((points_xy - center_xy)**2, axis=1))
     return distance
 
@@ -179,12 +181,11 @@ def crop_image(image, crop_tblr):
     
 def load_image(file_name: str, image_type: Literal['RGB', 'RAW8', 'RAW10', 'MIPI10'], image_size, crop_tblr= [0,0,0,0]):
     if image_type == 'RGB':
-        image, device_id = utils_support.read_rgb(str(file_name))
+        image, device_id = utils_support.read_rgb(file_name)
     elif image_type == 'RAW8':
-        print('raw8 is not written')
-        exit()
+        image, device_id = utils_support.read_raw8(file_name, image_size)
     elif image_type == 'RAW10':
-        image, device_id = utils_support.read_raw10(str(file_name), image_size)
+        image, device_id = utils_support.read_raw10(file_name, image_size)
     elif image_type == 'MIPI10':
         print('raw8 is not written')
         exit()
@@ -200,7 +201,7 @@ def load_image(file_name: str, image_type: Literal['RGB', 'RAW8', 'RAW10', 'MIPI
 def load_images(file_name, file_count, image_type: Literal['RGB', 'RAW8', 'RAW10', 'MIPI10'], image_size, crop_tblr= [0,0,0,0]):
     extension = os.path.splitext(file_name)[1] 
     # files_name = list(file_name.parent.rglob(f'*{extension}'))
-    files_name = search_files(str(file_name), extension)
+    files_name = search_files(file_name, extension)
     cnt = len(files_name)
     if cnt != file_count:
         raise ValueError(f"load_images: only find {cnt} files, {file_count} needed!")
@@ -295,13 +296,25 @@ class FilePath:
         new_folder_path = os.path.join(current_directory, folder_name)
         return new_folder_path  # 返回字符串
 
+def find_connected_area(image, thresh, info=None, count=0, debug_flag=False):
+    _, bw_image = cv2.threshold(image, 0, 255, cv2.THRESH_OTSU)
+    _, _, stats, centroids = cv2.connectedComponentsWithStats(~bw_image, connectivity=8)
+    index = np.where((stats[1:, 4] > thresh[0]) & (stats[1:, 4] < thresh[1]))[0] + 1
+    if debug_flag:
+        print(f'{info} area: {np.sort(stats[1:, 4])}, \n thresh: {thresh}')
+    if count != 0 and count != len(index):
+        raise KeyError(f'locate_block: only find {len(index)} blocks, {count} needed!')
+    valid_stats = stats[index]
+    valid_centroid = centroids[index]
+    return valid_stats, valid_centroid
+
 def get_rect(center_xy, roi_size):
     half_roi_height = roi_size[1] // 2
     half_roi_wight = roi_size[0] // 2
-    row_start = center_xy[1] - half_roi_height
-    row_end = row_start - roi_size[1]
-    col_start = center_xy[0] - half_roi_wight
-    col_end = col_start - roi_size[0]
+    row_start = round(center_xy[1]) - half_roi_height
+    row_end = row_start + roi_size[1]
+    col_start = round(center_xy[0]) - half_roi_wight
+    col_end = col_start + roi_size[0]
     return row_start, row_end, col_start, col_end
  
 def auto_exposure(image, bayer_pattern, center_xy, roi_size, brightness_type='Y'):

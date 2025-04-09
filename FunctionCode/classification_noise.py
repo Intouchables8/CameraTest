@@ -35,7 +35,7 @@ import os
 import shutil
 
 # 源文件夹路径
-source_folder = r'E:\Wrok\ERS\Diamond RGB\Module Images (for algo correlation)\Light (Fail)'
+source_folder = r'E:\Wrok\Temp\Oregon\20250409'
 
 # 获取文件夹中的所有文件
 files = os.listdir(source_folder)
