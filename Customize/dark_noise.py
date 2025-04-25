@@ -1,12 +1,12 @@
 import numpy as np
 import sys
 import os
-ROOTPATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+ROOTPATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(str(ROOTPATH))
 from Common import utils
 import os
-def dark_noise(images, csv_output, save_path):
-    # ------------------------ Tempo Noise ------------------------
+def calcu_noise(images, channel=''):
+     # ------------------------ Tempo Noise ------------------------
     # 计算每个像素在所有帧上的均值（保持维度便于后续广播）
     # tempo_pixel: 对每个像素沿帧计算样本标准差，然后取平均
     tempo_pixel = np.std(images, axis=2, ddof=1).mean()
@@ -50,23 +50,34 @@ def dark_noise(images, csv_output, save_path):
     ratio_pfpn = tempo_total / fpn_pixel
 
     data = {
-                'Dark_Noise_Total': str(dark_noise_total),
-                'dark_noise_FPN_total': str(dark_noise_fpn_total),
-                'Dark_Noise_FPN_Row': str(fpn_row),
-                'Dark_Noise_FPN_Col': str(fpn_col),
-                'Dark_Noise_FPN_Pixel': str(fpn_pixel),
-                'Dark_Noise_tempo_total': str(tempo_total),
-                'Dark_Noise_tempo_row': str(tempo_row),
-                'Dark_Noise_tempo_col': str(tempo_col),
-                'Dark_Noise_tempo_pixel': str(tempo_pixel),
-                'Dark_Noise_Ratio_rFPN': str(ratio_rfpn),
-                'Dark_Noise_Ratio_cFPN': str(ratio_cfpn),
-                'Dark_Noise_Ratio_pFPN': str(ratio_pfpn),
+                f'Dark_Noise_{channel}Total': str(dark_noise_total),
+                f'dark_noise_{channel}FPN_total': str(dark_noise_fpn_total),
+                f'Dark_Noise_{channel}FPN_Row': str(fpn_row),
+                f'Dark_Noise_{channel}FPN_Col': str(fpn_col),
+                f'Dark_Noise_{channel}FPN_Pixel': str(fpn_pixel),
+                f'Dark_Noise_{channel}tempo_total': str(tempo_total),
+                f'Dark_Noise_{channel}tempo_row': str(tempo_row),
+                f'Dark_Noise_{channel}tempo_col': str(tempo_col),
+                f'Dark_Noise_{channel}tempo_pixel': str(tempo_pixel),
+                f'Dark_Noise_{channel}Ratio_rFPN': str(ratio_rfpn),
+                f'Dark_Noise_{channel}Ratio_cFPN': str(ratio_cfpn),
+                f'Dark_Noise_{channel}Ratio_pFPN': str(ratio_pfpn),
                 
     }
+    return data
 
+def dark_noise(images, input_pattern, csv_output, save_path):
+    if input_pattern == 'Y':
+        data = calcu_noise(images)
+    else:
+        r, gr, gb, b = utils.split_channel(images, input_pattern)
+        r_data = calcu_noise(r, 'R_')
+        gr_data = calcu_noise(gr, 'Gr_')
+        gb_data = calcu_noise(gb, 'Gb_')
+        b_data = calcu_noise(b, 'B_')
+        data = {**r_data, **gr_data, **gb_data, **b_data}
+    
     if csv_output:
-        
         os.makedirs(save_path, exist_ok=True)
         save_file_path = os.path.join(save_path, 'dark_noise_data.csv')
         utils.save_dict_to_csv(data, str(save_file_path))
@@ -81,15 +92,18 @@ def func(file_name, save_path, config_path):
     if noise_cfg.sub_black_level:
         images = utils.sub_black_level(images, image_cfg.black_level)
     
-    dark_noise(images, noise_cfg.csv_output, save_path)
+    dark_noise(images, noise_cfg.input_pattern, noise_cfg.csv_output, save_path)
     return True
 
 if __name__ == '__main__':
-    file_name = r'G:\CameraTest\image\CV\dark\Ketron_P0C_FF2_Line1_DARK1_EOL-Dark_373KQ11GC300V8_030703111601010e0b0300001a08_20241228153651_0.raw'
-    save_path = r'E:\Wrok\Temp\CaliforniaFATP\20250312\20250311\offline\holder_1\356YW33GB6001T\20250311171830\Dark\noise\camera\result'
-    config_path = r'G:\CameraTest\Config\config_cv.yaml'
-    import time 
-    start = time.time()
-    func(file_name, save_path, config_path)
-    print(time.time() - start)
-    print('dark noise finished!')
+    # file_name = r'C:\Users\wangjianan\Desktop\Innorev_Result\Dark\imaegs\01\377TT04G9L000Z_Dark_0.raw'
+    save_path = r'C:\Users\wangjianan\Desktop\Innorev_Result\Dark'
+    config_path = r'G:\CameraTest\Config\config_rgb.yaml'
+    files = [r'C:\Users\wangjianan\Desktop\Innorev_Result\Dark\imaegs\01\377TT04G9L000Z_Dark_0.raw', 
+            r'C:\Users\wangjianan\Desktop\Innorev_Result\Dark\imaegs\02\377TT04G9L00B4_Dark_0.raw',
+            r'C:\Users\wangjianan\Desktop\Innorev_Result\Dark\imaegs\03\377TT04G9L01M7_Dark_0.raw',
+            r'C:\Users\wangjianan\Desktop\Innorev_Result\Dark\imaegs\04\377TT04G9L024C_Dark_0.raw',
+            r'C:\Users\wangjianan\Desktop\Innorev_Result\Dark\imaegs\05\377TT04G9L028D_Dark_0.raw']
+    for file_name in files:
+        func(file_name, save_path, config_path)
+        print('dark noise finished!')

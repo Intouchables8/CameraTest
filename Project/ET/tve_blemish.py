@@ -284,12 +284,12 @@ class TVEBlemish:
         self.run(image, save_path)
     
 if __name__ == '__main__':
-    file_name = r'E:\Wrok\ERS\Oregon\对标数据\Blemish\light\OK_1_2Q2RC1FG6S00HC_004360681a49050092610100_20240813020821_0.raw'
-    save_path = r'G:\CameraTest\result'
-    config_path = r'G:\CameraTest\Config\config_oregon.yaml'
+    file_name = r'E:\Wrok\ERS\Diamond ET\Module Images (for algo correlation)\Augustine (POR)\Blemish (Passing)\10f10c010b19b219c60004054100400100000000_082031.raw'
+    save_path = r'E:\Wrok\ERS\Diamond ET\Module Images (for algo correlation)\Augustine (POR)\Blemish (Passing)'
+    config_path = r'G:\CameraTest\Config\config_et.yaml'
     blemish = TVEBlemish(config_path)
     
-    # utils.process_file_or_folder(file_name,'.raw', blemish.func, save_path)
+    # utils.process_files(file_name, blemish.func,'.raw', save_path)
     blemish.func(file_name, save_path)
     print('blemish finish')
 

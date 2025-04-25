@@ -203,11 +203,11 @@ def load_images(file_name, file_count, image_type: Literal['RGB', 'RAW8', 'RAW10
     # files_name = list(file_name.parent.rglob(f'*{extension}'))
     files_name = search_files(file_name, extension)
     cnt = len(files_name)
-    if cnt != file_count:
+    if cnt < file_count:
         raise ValueError(f"load_images: only find {cnt} files, {file_count} needed!")
     images = np.zeros((image_size[0], image_size[1], file_count))
-    for i, name in enumerate(files_name):
-        images[:, :, i] = load_image(name, image_type, image_size)
+    for i in range(file_count):
+        images[:, :, i] = load_image(files_name[i], image_type, image_size)
     if any(x !=0 for x in crop_tblr):
         images = crop_image(images, crop_tblr)
     return images
@@ -246,10 +246,18 @@ def generate_roi(center_xy, roi_size):
     return dst_roi
 
 def split_channel(image, bayter_pattern):
-    tl = image[0 :: 2, 0 :: 2]
-    tr = image[0 :: 2, 1 :: 2]
-    bl = image[1 :: 2, 0 :: 2]
-    br = image[1 :: 2, 1 :: 2]
+    dim = image.ndim
+    if dim == 2:
+        tl = image[0 :: 2, 0 :: 2]
+        tr = image[0 :: 2, 1 :: 2]
+        bl = image[1 :: 2, 0 :: 2]
+        br = image[1 :: 2, 1 :: 2]
+    if dim == 3:
+        tl = image[0 :: 2, 0 :: 2, :]
+        tr = image[0 :: 2, 1 :: 2, :]
+        bl = image[1 :: 2, 0 :: 2, :]
+        br = image[1 :: 2, 1 :: 2, :]
+    
     if bayter_pattern == 'RGGB':
         r = tl
         gr = tr

@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 import os
 import sys
-ROOTPATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+ROOTPATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(str(ROOTPATH))
 from Common import utils
 from Common import ciede2000
@@ -230,22 +230,27 @@ def color_uniformity(image, bayer_pattern, roi_size, mask_radius, fov_rings, cal
                     'CU_01F_Min': str(val_ciede[0,1]),
                     'CU_01F_Mean': str(val_ciede[0,2]),
                     'CU_01F_Std': str(val_ciede[0,3]),
+                    'CU_01F_Range': str(val_ciede[0,0] - val_ciede[0,1]),
                     'CU_03F_Max': str(val_ciede[1,0]),
                     'CU_03F_Min': str(val_ciede[1,1]),
                     'CU_03F_Mean': str(val_ciede[1,2]),
                     'CU_03F_Std': str(val_ciede[1,3]),
+                    'CU_03F_Range': str(val_ciede[1,0] - val_ciede[1,1]),
                     'CU_05F_Max': str(val_ciede[2,0]),
                     'CU_05F_Min': str(val_ciede[2,1]),
                     'CU_05F_Mean': str(val_ciede[2,2]),
                     'CU_05F_Std': str(val_ciede[2,3]),
+                    'CU_05F_Range': str(val_ciede[2,0] - val_ciede[2,1]),
                     'CU_07F_Max': str(val_ciede[3,0]),
                     'CU_07F_Min': str(val_ciede[3,1]),
                     'CU_07F_Mean': str(val_ciede[3,2]),
                     'CU_07F_Std': str(val_ciede[3,3]),
+                    'CU_07F_Range': str(val_ciede[3,0] - val_ciede[3,1]),
                     'CU_09F_Max': str(val_ciede[4,0]),
                     'CU_09F_Min': str(val_ciede[4,1]),
                     'CU_09F_Mean': str(val_ciede[4,2]),
                     'CU_09F_Std': str(val_ciede[4,3]),
+                    'CU_09F_Range': str(val_ciede[4,0] - val_ciede[4,1]),
                     'CU_DeltaE_Range': str(val_ciede[:, 0].max() - val_ciede[:, 1].min()),
     }
     if calcu_delta_c or calcu_old_cu:
@@ -292,10 +297,10 @@ def func(cu_path, save_path, config_path):
     return True
 
 if __name__ == '__main__':
-    cu_path = r'G:\CameraTest\image\RGB\light\20241221_144804__0_AS_DNPVerify_377TT04G9L01TG.raw'
-    save_path = r'G:\CameraTest\result'
+    file_name = r'C:\Users\wangjianan\Desktop\Innorev_Result\Lightfield\images'
+    save_path = r'C:\Users\wangjianan\Desktop\Innorev_Result\Lightfield'
     config_path = r'G:\CameraTest\Config\config_rgb.yaml'
-    func(cu_path, save_path, config_path)
+    utils.process_files(file_name, func, '.raw', save_path, config_path)
     print('CU finished!')
 
 

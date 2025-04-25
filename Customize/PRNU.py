@@ -2,7 +2,7 @@ import os
 import cv2
 import numpy as np
 import sys
-ROOTPATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+ROOTPATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(str(ROOTPATH))
 from Common import utils
 
@@ -62,7 +62,7 @@ if __name__ == '__main__':
     file_name = r'G:\CameraTest\image\CV\light\Ketron_P0C_FF2_Line1_Light1_EOL-Light__030703111601010e0b0300001a08_20241229041233_0.raw'
     save_path = r'G:\CameraTest\result'
     config_path = r'G:\CameraTest\Config\config_cv.yaml'
-    # utils.process_file_or_folder(file_name, '.raw', func, save_path, config_path)
+    # utils.process_files(file_name, func, '.raw', save_path, config_path)
     func(file_name, save_path, config_path)
     
     print('PRNU finished!')

@@ -2,7 +2,7 @@ import os
 import sys
 # from scipy.ndimage import median_filter
 # from numba import jit, prange
-ROOTPATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+ROOTPATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(str(ROOTPATH))
 import cv2
 from Common import edge_median_filter
@@ -261,7 +261,7 @@ class TVEBlemish:
         blemish_area, blemish_count = TVEBlemish._get_blemish_area(blemish_map, self.cfg.down_scale_factor, self.cfg.min_area)
         
         # ------------- Visualization --------
-        if self.cfg.debug_flag:
+        if self.cfg.debug_flag and blemish_count > 0:
             
             os.makedirs(save_path, exist_ok=True)
             TVEBlemish._visualization(image, blemish_map, self.cfg.min_area, blemish_count, final_thresh, blemish_area, self.cfg.down_scale_factor, delta_image, save_path, self.cfg.dpi)
@@ -284,13 +284,11 @@ class TVEBlemish:
         self.run(image, save_path)
     
 if __name__ == '__main__':
-    file_name = r'E:\Wrok\ERS\Oregon\对标数据\Blemish\light\OK_1_2Q2RC1FG6S00HC_004360681a49050092610100_20240813020821_0.raw'
-    save_path = r'G:\CameraTest\result'
-    config_path = r'G:\CameraTest\Config\config_oregon.yaml'
+    file_name = r'C:\Users\wangjianan\Desktop\Innorev_Result\blemish\pass'
+    save_path = r'C:\Users\wangjianan\Desktop\Innorev_Result\blemish\pass'
+    config_path = r'G:\CameraTest\Config\config_rgb.yaml'
     blemish = TVEBlemish(config_path)
-    
-    # utils.process_file_or_folder(file_name,'.raw', blemish.func, save_path)
-    blemish.func(file_name, save_path)
+    utils.process_files(file_name, blemish.func, '.raw', save_path)
     print('blemish finish')
 
 

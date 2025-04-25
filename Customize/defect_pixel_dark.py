@@ -1,7 +1,7 @@
 import numpy as np
 import sys
 import os
-ROOTPATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+ROOTPATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(str(ROOTPATH))
 from Common import utils
 import os
@@ -109,37 +109,41 @@ def defect_pixel_dark(image, bayer_pattern, thresh, csv_output, debug_flag=False
         y_total_dpd, y_singlet_dpd, y_doublet_dpd, y_triplet_dpd, above, dpd_map = _dpd_support(image, 'orgin', thresh, debug_flag, save_path, distribution)
         data = { 
                     'DPD_Contrast_Threshold': str(thresh),
-                    'DPD_Singlet_count': str(y_singlet_dpd),
-                    'DPD_Singlet_RBGrGbSum_Ct count': str(b_singlet_dpd + gb_singlet_dpd + gr_singlet_dpd + r_singlet_dpd),
+
                     'DPD_Singlet_count_R': str(r_singlet_dpd),
-                    'DPD_Singlet_count_Gb': str(gb_singlet_dpd),
-                    'DPD_Singlet_count_Gr': str(gr_singlet_dpd),
-                    'DPD_Singlet_count_G': str(gb_singlet_dpd + gr_singlet_dpd),
-                    'DPD_Singlet_count_B': str(b_singlet_dpd),
-                    
-                    'DPD_Doublet_count': str(y_doublet_dpd),
-                    'DPD_Doublet_RBGrGbSum_Ct': str(b_doublet_dpd + gb_doublet_dpd + gr_doublet_dpd + r_doublet_dpd),
                     'DPD_Doublet_count_R': str(r_doublet_dpd),
-                    'DPD_Doublet_count_Gb': str(gb_doublet_dpd),
-                    'DPD_Doublet_count_Gr': str(gr_doublet_dpd),
-                    'DPD_Doublet_count_G': str(gr_doublet_dpd + gb_doublet_dpd),
-                    'DPD_Doublet_count_B': str(b_doublet_dpd),
-                    
-                    'DPD_Triplet_count': str(y_triplet_dpd),
-                    'DPD_Triplet_RBGrGbSum_Ct': str(b_triplet_dpd + gb_triplet_dpd + gr_triplet_dpd + r_triplet_dpd),
                     'DPD_Triplet_count_R': str(r_triplet_dpd),
-                    'DPD_Triplet_count_Gb': str(gb_triplet_dpd),
-                    'DPD_Triplet_count_Gr': str(gr_triplet_dpd),
-                    'DPD_Triplet_count_G': str(gr_triplet_dpd + gb_triplet_dpd),
-                    'DPD_Triplet_count_B': str(b_triplet_dpd),
-                    
                     'DPD_R_Total_Area': str(r_total_dpd),
-                    'DPD_Gr_Total_Area': str(gr_total_dpd),
+                    
+                    'DPD_Singlet_count_Gb': str(gb_singlet_dpd),
+                    'DPD_Doublet_count_Gb': str(gb_doublet_dpd),
+                    'DPD_Triplet_count_Gb': str(gb_triplet_dpd),
                     'DPD_Gb_Total_Area': str(gb_total_dpd),
-                    'DPD_G_Total_Area': str(gr_total_dpd + gb_total_dpd),
+                    
+                    'DPD_Singlet_count_Gr': str(gr_singlet_dpd),
+                    'DPD_Doublet_count_Gr': str(gr_doublet_dpd),
+                    'DPD_Triplet_count_Gr': str(gr_triplet_dpd),
+                    'DPD_Gr_Total_Area': str(gr_total_dpd),
+                    
+                    'DPD_Singlet_count_B': str(b_singlet_dpd),
+                    'DPD_Doublet_count_B': str(b_doublet_dpd),
+                    'DPD_Triplet_count_B': str(b_triplet_dpd),
                     'DPD_B_Total_Area': str(b_total_dpd),
-                    'DPD_Total_Area': str(y_total_dpd),
-                    'DPD_Total_Area_RBGrGbSum': str(b_total_dpd + gb_total_dpd + gr_total_dpd + r_total_dpd)
+                    
+                    'DPD_Singlet_count_G': str(gb_singlet_dpd + gr_singlet_dpd),
+                    'DPD_Doublet_count_G': str(gr_doublet_dpd + gb_doublet_dpd),
+                    'DPD_Triplet_count_G': str(gr_triplet_dpd + gb_triplet_dpd),
+                    'DPD_G_Total_Area': str(gr_total_dpd + gb_total_dpd),
+                    
+                    'DPD_Singlet_RBGrGbSum_Ct': str(b_singlet_dpd + gb_singlet_dpd + gr_singlet_dpd + r_singlet_dpd),
+                    'DPD_Doublet_RBGrGbSum_Ct': str(b_doublet_dpd + gb_doublet_dpd + gr_doublet_dpd + r_doublet_dpd),
+                    'DPD_Triplet_RBGrGbSum_Ct': str(b_triplet_dpd + gb_triplet_dpd + gr_triplet_dpd + r_triplet_dpd),
+                    'DPD_Total_Area_RBGrGbSum': str(b_total_dpd + gb_total_dpd + gr_total_dpd + r_total_dpd),
+                    
+                    'DPD_Singlet_count': str(y_singlet_dpd),
+                    'DPD_Doublet_count': str(y_doublet_dpd),
+                    'DPD_Triplet_count': str(y_triplet_dpd),
+                    'DPD_Total_Area': str(y_total_dpd),  
         }
     else:
         total_dpd, singlet_dpd, doublet_dpd, triplet_dpd, above, dpd_map = _dpd_support(image, 'orgin', thresh, debug_flag, save_path, distribution)
@@ -180,11 +184,8 @@ def func(file_name, save_path, config_path):
     return True
 
 if __name__ == '__main__':
-    file_name = r'G:\CameraTest\image\CV\dark\Ketron_P0C_FF2_Line1_DARK1_EOL-Dark_373KQ11GC300V8_030703111601010e0b0300001a08_20241228153651_0.raw'
-    save_path = r'G:\CameraTest\result'
-    config_path = r'G:\CameraTest\Config\config_cv.yaml'
-    import time 
-    start = time.time()
-    func(file_name, save_path, config_path)
-    print(time.time() - start)
+    file_name = r'C:\Users\wangjianan\Desktop\Innorev_Result\DPD\image'
+    save_path = r'C:\Users\wangjianan\Desktop\Innorev_Result\DPD'
+    config_path = r'G:\CameraTest\Config\config_rgb.yaml'
+    utils.process_files(file_name, func, '.raw',save_path, config_path)
     print('dpd finished!')

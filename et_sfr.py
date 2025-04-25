@@ -55,10 +55,10 @@ class CalSFR:
                 f'Rotation_TR_BL': rotation_tr_bl * degree_2_rad,  
                 f'Rotation_Mean': rotation_mean * degree_2_rad,  
                 f'D_FOV': fov_d,  
-                f'P5_x': points_xy[0][0],  
-                f'P5_y': points_xy[0][1],  
-                f'P6_x': points_xy[1][0],  
-                f'P6_y': points_xy[1][1],  
+                f'P9_x': points_xy[0][0],  
+                f'P9_y': points_xy[0][1],  
+                f'P10_x': points_xy[1][0],  
+                f'P10_y': points_xy[1][1],  
                 f'P17_x': points_xy[2][0],  
                 f'P17_y': points_xy[2][1],  
                 f'P18_x': points_xy[3][0],  
@@ -71,11 +71,10 @@ class CalSFR:
         
         
 if __name__ == '__main__':
-    file_name = r'.\image\ET\sfr.raw'
-    save_path = r'.\result'
+    file_name = r'E:\Wrok\ERS\Diamond ET\Module Images (for algo correlation)\Augustine (POR)\SFR Alignment\PU0_Channel1_Image0.raw'
+    save_path = r'E:\Wrok\ERS\Diamond ET\Module Images (for algo correlation)\Augustine (POR)\SFR Alignment'
     config_path = r'G:\CameraTest\Config\config_et.yaml'
     sfr = CalSFR(config_path)
     sfr.func(file_name, save_path)
-    # utils.process_file_or_folder(file_name, '.raw', sfr.func, save_path)
-    # utils.process_file_or_folder(file_name, '.raw', sfr.func, save_path)
+    # utils.process_files(file_name, sfr.func, '.raw', save_path)
     print('sfr finished!') 

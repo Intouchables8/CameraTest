@@ -58,5 +58,5 @@ if __name__ == '__main__':
     # raw_file_dict = find_first_raw_file(file_name)
     # for folder, file in raw_file_dict.items():
     #     sfr.func(file, save_path)
-    # utils.process_file_or_folder(file_name, '.raw', sfr.func, save_path)
+    # utils.process_files(file_name, sfr.func, '.raw', save_path)
     print('sfr finished!') 

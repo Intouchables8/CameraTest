@@ -2,7 +2,7 @@ import os
 import cv2
 import numpy as np
 import sys
-ROOTPATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+ROOTPATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(str(ROOTPATH))
 from Common import utils
 
@@ -122,12 +122,12 @@ def relative_illumination(image, roi_size, snr_roi_size, mask_radius, border_dis
     mean_u, mean_ul, mean_ur, mean_l, mean_c, mean_r, mean_ll, mean_lr, mean_d, coordinate = _locate_roi(image, center_x, center_y, roi_size, mask_radius, border_distance, image_size)
     ri_U, ri_UL, ri_UR, ri_L, ri_R, ri_LL, ri_LR, ri_D = np.array([mean_u, mean_ul, mean_ur, mean_l, mean_r, mean_ll, mean_lr, mean_d]) / mean_c
     ri_corner = np.array([ri_UL, ri_UR, ri_LL, ri_LR])
-    ri_udrl = np.array([ri_U, ri_D, ri_L, ri_R])
+    ri_tbrl = np.array([ri_U, ri_D, ri_L, ri_R])
     ri_corner_min = ri_corner.min()
     ri_corner_avg = ri_corner.mean()
-    ri_corner_delta_max = ri_corner.max() - ri_corner.min()
-    ri_durl_min = ri_udrl.min()
-    ri_durl_delta = ri_udrl.max() - ri_udrl.min()
+    ri_corner_delta = ri_corner.max() - ri_corner.min()
+    ri_tbrl_min = ri_tbrl.min()
+    ri_tbrl_delta = ri_tbrl.max() - ri_tbrl.min()
     coordinate_data = [ri_U, ri_D, ri_L, ri_R, mean_c, ri_UL, ri_UR, ri_LL, ri_LR]
     
     # SNR
@@ -135,10 +135,10 @@ def relative_illumination(image, roi_size, snr_roi_size, mask_radius, border_dis
    
     data = {
                 'RI_Corner_Min': str(100 * ri_corner_min),
-                'RI_UDLR_Min': str(100 * ri_durl_min),
-                'RI_Corner_Delta': str(100 * ri_corner_delta_max),
+                'RI_UDLR_Min': str(100 * ri_tbrl_min),
+                'RI_Corner_Delta': str(100 * ri_corner_delta),
                 'RI_Corner_Mean': str(100 * ri_corner_avg),
-                'RI_UDLR_Delta_Max': str(100 * ri_durl_delta),
+                'RI_UDLR_Delta_Max': str(100 * ri_tbrl_delta),
                 'RI_Center_mean_lSB': str(mean_c),
                 'RI_mean_ul': str(mean_ul),
                 'RI_mean_ur': str(mean_ur),
@@ -196,11 +196,10 @@ def func(file_name, save_path, config_path):
     return 
 
 if __name__ == '__main__':
-    file_name = r'G:\CameraTest\image\RGB\light.raw'
-    save_path = r'E:\Wrok\Temp\Oregon\0304\AH4 verification\test'
+    file_name = r'C:\Users\wangjianan\Desktop\Innorev_Result\Lightfield\images'
+    save_path = r'C:\Users\wangjianan\Desktop\Innorev_Result\Lightfield'
     config_path = r'G:\CameraTest\Config\config_rgb.yaml'
-    # utils.process_file_or_folder(file_name, '.raw', func, save_path, config_path)
-    func(file_name, save_path, config_path)
+    utils.process_files(file_name, func, '.raw', save_path, config_path)
     
     print('RI finished!')
     

@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 import os
 import sys
-ROOTPATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+ROOTPATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(str(ROOTPATH))
 from Common import utils
 # from concurrent.futures import ThreadPoolExecutor
@@ -31,12 +31,27 @@ def _debug_image(valid_row_index, valid_col_index, row_avg, col_avg, row_diff, c
             diff_data.append(col_diff[index])
         
     data = zip(channel_data, item_data, index_data, avg_data, diff_data)
-    save_file_path = os.path.join(save_path, (utils.GlobalConfig.get_device_id() + '_DRCD.csv'))
+    save_file_path = os.path.join(save_path, (utils.GlobalConfig.get_device_id() + '_DRCL.csv'))
     utils.save_lists_to_csv(data, name, str(save_file_path))
 
-def drcd(image, thresh, neighbor, debug_flag, save_path, channel):
-    row_avg = image.mean(axis = 1)
-    col_avg = image.mean(axis = 0)
+def drcl(src, thresh, mask_radius, min_pixel, neighbor, debug_flag, save_path, channel):
+    image = src.copy()
+    image_size = image.shape
+    if mask_radius > 0:
+        mask = utils.generate_mask(image_size, mask_radius)
+        image[mask == 0] = 0
+        row_sum = image.sum(axis=1)
+        row_count = np.count_nonzero(mask, axis=1)
+        row_avg = row_sum / row_count
+
+        col_sum = image.sum(axis=0)
+        col_count = np.count_nonzero(mask, axis=0)
+        col_avg = col_sum / col_count
+    
+    else:
+        row_avg = image.mean(axis = 1)
+        col_avg = image.mean(axis = 0)
+        row_count, col_count = image_size
 
     if neighbor > 1:
         kern = np.array((1, 0, 1)) if neighbor == 1 else np.array((1, 1, 0, 1, 1))
@@ -58,37 +73,42 @@ def drcd(image, thresh, neighbor, debug_flag, save_path, channel):
     ## Threshold
     row_index = np.where(row_diff > thresh)[0]
     col_index = np.where(col_diff > thresh)[0]
-
+    row_index_index = np.where(row_count[row_index] > min_pixel)
+    col_index_index = np.where(col_count[col_index] > min_pixel)
+    valid_row_index = row_index[row_index_index]
+    valid_col_index = col_index[col_index_index]
+    
     if debug_flag:
-        if len(row_index) > 0 or len(col_index):
+        if len(valid_row_index) > 0 or len(valid_col_index):
             
             os.makedirs(save_path, exist_ok=True)
-            _debug_image(row_index, col_index, row_avg, col_avg, row_diff, col_diff, channel, save_path)
-    return row_index, col_index
+            _debug_image(valid_row_index, valid_col_index, row_avg, col_avg, row_diff, col_diff, channel, save_path)
+    return valid_row_index, valid_col_index
 
-def defect_row_col_dark(image, thresh, input_pattern, neighbor, save_path, csv_output, debug_flag):
+def defect_row_col_light(image, thresh, input_pattern, mask_radius, min_pixel, neighbor, save_path, csv_output, debug_flag):
+    
     if input_pattern != 'Y':
         pass
-    
     else:
-        row_index, col_index = drcd(image, thresh, neighbor, debug_flag, save_path, 'Y')
+        row_index, col_index = drcl(image, thresh, mask_radius, min_pixel, neighbor, debug_flag, save_path, 'Y')
         data = {
-            'DRCD_Thresh': thresh,
-            'Defect_Row_Dark': str(len(row_index)),
-            'Defect_Col_Dark': str(len(col_index))
+            'DRCL_Thresh': str(thresh),
+            'Defect_Row_Light': str(len(row_index)),
+            'Defect_Col_Light': str(len(col_index))
         }
     if csv_output:
         
         os.makedirs(save_path, exist_ok=True)
-        save_file_path = os.path.join(save_path, 'drcd_data.csv')
+        save_file_path = os.path.join(save_path, 'drcl_data.csv')
         utils.save_dict_to_csv(data, str(save_file_path)) 
-    return data 
-        
+    return data
     
+    
+
 def func(file_name, save_path, config_path):
-    cfg = utils.load_config(config_path).dark
+    cfg = utils.load_config(config_path).light
     image_cfg = cfg.image_info
-    cfg = cfg.defect_row_col_dark
+    cfg = cfg.defect_row_col_light
     image = utils.load_image(file_name, image_cfg.image_type, image_cfg.image_size, image_cfg.crop_tblr)
 
     if cfg.sub_black_level:
@@ -97,13 +117,13 @@ def func(file_name, save_path, config_path):
     if cfg.input_pattern == 'Y' and image_cfg.bayer_pattern != 'Y':
         image = utils.bayer_2_y(image, image_cfg.bayer_pattern)
         
-    defect_row_col_dark(image, cfg.thresh, cfg.input_pattern, cfg.neighbor, save_path, cfg.csv_output, cfg.debug_flag)
+    defect_row_col_light(image, cfg.thresh, cfg.input_pattern, cfg.mask_radius, cfg.min_pixel, cfg.neighbor, save_path, cfg.csv_output, cfg.debug_flag)
     return True
 
 if __name__ == '__main__':
-    file_name = r'G:\CameraTest\image\CV\dark\Ketron_P0C_FF2_Line1_DARK1_EOL-Dark_373KQ11GC300V8_030703111601010e0b0300001a08_20241228153651_0.raw'
-    save_path = r'G:\CameraTest\result'
-    config_path = r'G:\CameraTest\Config\config_cv.yaml'
-    func(file_name, save_path, config_path)
+    file_name = r'C:\Users\wangjianan\Desktop\Innorev_Result\Lightfield\images'
+    save_path = r'C:\Users\wangjianan\Desktop\Innorev_Result\Lightfield'
+    config_path = r'G:\CameraTest\Config\config_rgb.yaml'
+    utils.process_files(file_name, func, '.raw', save_path, config_path)
     
-    print('drcd finished!')
+    print('drcl finished!')

@@ -41,7 +41,7 @@ dll.LensCorrectionLibRaw10_R.argtypes = [
                 ]
 dll.LensCorrectionLibRaw10_R.restype = ctypes.c_int  # 返回值类型
 
-def calcu_lsc(image, table_size, bayer_pattern, size_factor=8):
+def calcu_lsc(image, table_size, bayer_pattern, sub_black_level, black_level, csv_output, save_path,size_factor=8):
     '''
     #define RGGB_PATTERN	0
     #define GRBG_PATTERN	1
@@ -56,6 +56,11 @@ def calcu_lsc(image, table_size, bayer_pattern, size_factor=8):
         mode = 2
     elif bayer_pattern == 'GBRG':
         mode = 3
+    
+    if sub_black_level:
+        bl = black_level
+    else:
+        bl = 0
         
     height, width = image.shape
     raw_data = image.flatten()
@@ -84,7 +89,7 @@ def calcu_lsc(image, table_size, bayer_pattern, size_factor=8):
                 width,                  # 宽度
                 height,                 # 高度
                 mode,                   # Bayer Pattern (假设为0)
-                0, 0, 0, 0,             # 各通道的black level
+                bl, bl, bl, bl,             # 各通道的black level
                 False,                  # 是否为9*7
                 cal_result,             # 使用 c_void_p 类型传递结构体指针
                 size_factor,            # WB取值区域
@@ -94,28 +99,37 @@ def calcu_lsc(image, table_size, bayer_pattern, size_factor=8):
             result = {}
             for i in range(len_result):
                 result[f'LSC_R_{i}'] = cal_result.R_LSC[i]
+            for i in range(len_result):
                 result[f'LSC_Gr_{i}'] =cal_result.Gr_LSC[i]
+            for i in range(len_result):
                 result[f'LSC_Gb_{i}'] =cal_result.Gb_LSC[i]
+            for i in range(len_result):
                 result[f'LSC_B_{i}'] =cal_result.B_LSC[i]
             result['R_Gr'] = cal_result.AWB[0]
             result['B_Gr'] = cal_result.AWB[1]
             result['Gb_Gr'] = cal_result.AWB[2]
+            if csv_output:
+                save_file_name = os.path.join(save_path, 'LSC.csv')
+                utils.save_dict_to_csv(result, save_file_name)      
             return result   
         else:
             print(f"Error during calibration. Return code: {ret}")
 
     except Exception as e:
         print(f"调用 LensCorrectionLibRaw10_R 时出错: {e}")
+        
+def func(file_name, save_path, config_path):
+    cfg = utils.load_config(config_path).light
+    image_cfg = cfg.image_info
+    cfg = cfg.LSC
+    image = utils.load_image(file_name, image_cfg.image_type, image_cfg.image_size, image_cfg.crop_tblr)
+    result = calcu_lsc(image, cfg.table_size, image_cfg.bayer_pattern, cfg.sub_black_level, cfg.black_level, cfg.csv_output, save_path,cfg.size_factor)
 
 if __name__ == '__main__':
-    file_name =r'E:\Wrok\ERS\Oregon\对标数据\light\CU\light field image.raw'
-    image_size = (3024, 4032) # row col
-    table_size = (17, 13)
-    black_level = 64
-    bayer_pattern = 'RGGB'
-    image = utils.load_image(file_name, "RAW10", image_size)
-    image = utils.sub_black_level(image, black_level)
-    result = calcu_lsc(image, table_size, bayer_pattern)
+    file_name = r'E:\Wrok\ERS\Diamond RGB\data_algo_pack\Innorev_Result\lsc\images'
+    save_path = r'E:\Wrok\ERS\Diamond RGB\data_algo_pack\Innorev_Result\lsc'
+    config_path = r'G:\CameraTest\Config\config_rgb.yaml'
+    utils.process_files(file_name, func, '.raw', save_path, config_path)
     pass
     
 

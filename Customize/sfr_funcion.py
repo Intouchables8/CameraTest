@@ -88,7 +88,7 @@ def rotation_rgb(point_xy_0, point_xy_1, point_xy_2, point_xy_3, point_xy_4):
     '''
     rotation_1 = np.arctan((point_xy_0[1] - point_xy_1[1]) / (point_xy_1[0] - point_xy_0[0])) 
     rotation_2 = np.arctan((point_xy_2[0] - point_xy_0[0]) / (point_xy_2[1] - point_xy_0[1])) 
-    rotation_3 = np.arctan((point_xy_2[1] - point_xy_3[1]) / (point_xy_2[0] - point_xy_3[0])) 
+    rotation_3 = np.arctan((point_xy_0[1] - point_xy_3[1]) / (point_xy_0[0] - point_xy_3[0])) 
     rotation_4 = np.arctan((point_xy_4[0] - point_xy_0[0]) / (point_xy_4[1] - point_xy_0[1])) 
     rotation = (rotation_1 + rotation_2 + rotation_3 + rotation_4) * 0.25
     return rotation, rotation_1, rotation_2, rotation_3, rotation_4

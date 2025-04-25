@@ -1,6 +1,6 @@
 light:
   image_info:
-    image_size: [1808, 2888]
+    image_size: [3024, 4032]
     crop_tblr: [0, 0, 0, 0]
     bayer_pattern: "BGGR"  
     image_type: "RAW10"
@@ -10,23 +10,23 @@ light:
   relative_illumination:
     sub_black_level: True
     input_pattern: "Y"  
-    mask_radius: 1697
-    roi_size: [32, 32]
-    snr_roi_size: [100, 100]
-    border_distance: 8
+    mask_radius: 2260
+    roi_size: [50, 50]
+    snr_roi_size: [50, 50]
+    border_distance: 0
     csv_output: true 
     debug_flag: true
   
   optical_center:
     sub_black_level: True
     input_pattern: "Y"  
-    thresh: 0.1
+    thresh: 0.9
     csv_output: true 
 
   defect_pixel_light:
     sub_black_level: True
     input_pattern: "Y"  
-    mask_radius: 1697
+    mask_radius: 2260
     roi_size: [31, 31]
     thresh: 0.3
     csv_output: true 
@@ -35,8 +35,8 @@ light:
   defect_row_col_light:
     sub_black_level: True
     input_pattern: "Y"  
-    mask_radius: 1697
-    thresh: 2
+    mask_radius: 2260
+    thresh: 8
     neighbor: 0  
     min_pixel: 10
     csv_output: true 
@@ -45,7 +45,7 @@ light:
   relative_uniformity:
     sub_black_level: True
     input_pattern: "Y"  
-    mask_radius: 1697
+    mask_radius: 2260
     roi_size: [16, 16]
     border_distance: 0
     delta_angle: 45
@@ -56,27 +56,27 @@ light:
     sub_black_level: True
     input_pattern: "BGGR"  
     image_count: 5
-    mask_radius: 1697
+    mask_radius: 2260
     roi_size: [20, 20]
     fov_rings: [0.1, 0.3, 0.5, 0.7, 0.9]
     calcu_delta_c: true  
-    calcu_old_cu: true  
+    calcu_old_cu: false  
     csv_output: true 
     debug_flag: true
 
   blemish:
-    image_size: [1808, 2888]
+    image_size: [3024, 4032]
     down_scale_factor: 2  
-    kernel_size: [25, 25]  
+    kernel_size: [55, 55]  
     morph: False
     morph_kern: [0, 0]
     poly_degree: 6
     side_mask: 20          
-    mask_radius: 1697    
+    mask_radius: 2260    
     denoise_sigma: 5       
     threshold_m: 4
     threshold_n: 1
-    threshold_min_max: [2, 8]   
+    threshold_min_max: [2.5, 8]   
     min_area: 1
     input_pattern: "Y"
     seg_dir: 1
@@ -92,8 +92,11 @@ light:
     csv_output: true 
   
   LSC:
-    table_size: [13, 17]
-    roi_size: [10, 10]
+    table_size: [17, 13]
+    sub_black_level: true
+    black_level: 64
+    csv_output: true 
+    size_factor: 8
 
 sfr:
   image_info:
@@ -113,7 +116,7 @@ sfr:
     mask_erode_size: [3, 3]
     canny_thresh: [20, 30]
     blur_size: (5, 5)
-    n_block: 99
+    n_block: 117
     block_thresh: [16500, 22500]
     n_half_block: 0
     half_block_thresh: [0, 0] 
@@ -123,7 +126,7 @@ sfr:
     point_dist_from_center: [0, 0]
     inner_block_thresh: [200, 300]
     delta_angle: 15
-    roi_size: [150, 70]
+    roi_size: [100, 50]
     debug_flag: false
     clockwise: false
     text_size: 1.4
@@ -133,7 +136,7 @@ sfr:
   
   select_roi:
     roi_inex: [234,233,232,235,
-              178,179,184,187,288,289,281,282,
+              178,179,184,187,288,289,282,281,
               116,119,142,143,350,349,324,325,222,77,244,391,
               166,165,60,63,94,95,196,197,300,303,406,405,372,373,270,271,18,38,448,434,
               58,57,96,97,408,411,370,371
@@ -143,11 +146,13 @@ sfr:
     ny_freq: [4]
     debug_flag: true
     text_value: true
-    csv_output: false
+    csv_output: true
+  
+  customized_params:
 
 dark:
   image_info:
-    image_size: [1808, 2888]
+    image_size: [3024, 4032]
     crop_tblr: [0, 0, 0, 0]
     bayer_pattern: "BGGR"
     image_type: "RAW10"
@@ -156,16 +161,16 @@ dark:
 
   defect_pixel_dark:
     image_count: 1
-    input_pattern: "Y"
+    input_pattern: "BGGR"
     sub_black_level: false
     thresh: 140
     csv_output: true 
-    debug_flag: true
+    debug_flag: false
     distribution: false
   
   DSNU:
     roi_size: [8, 8]
-    image_count: 5
+    image_count: 1
     except_dpd: false
     csv_output: true 
     debug_flag: true
@@ -182,6 +187,7 @@ dark:
 
   dark_noise:
     image_count: 5
+    input_pattern: "BGGR"
     sub_black_level: false
     csv_output: true 
 

@@ -1,7 +1,7 @@
 import numpy as np
 import sys
 import os
-ROOTPATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+ROOTPATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(str(ROOTPATH))
 from Common import utils
 import os
@@ -15,8 +15,7 @@ def dsnu(image, roi_size, except_dpd=False, dpd_map=None, thresh=0, csv_output=F
 
     integralImage = cv2.integral(image)  # 对图像的每个点与之前的所有点进行求和
     roi_size_height = roi_size[0]
-    rows, cols = image.shape
-    W, H = image.shape[1], image.shape[0]
+    H, W = image.shape
     col = 0
     avg_block = []
     for x in range(0, W, roi_size_height):
@@ -36,8 +35,8 @@ def dsnu(image, roi_size, except_dpd=False, dpd_map=None, thresh=0, csv_output=F
     DSNU = max_dsnu - min_dsnu
     data = {
             'DSNU': DSNU,
-            'Max_DSNU': max_dsnu,
-            'MIN_DSNU': min_dsnu,
+            # 'Max_DSNU': max_dsnu,
+            # 'MIN_DSNU': min_dsnu,
     }
 
     
@@ -63,11 +62,10 @@ def func(file_name, save_path, config_path):
     return True
 
 if __name__ == '__main__':
-    file_name = r'G:\CameraTest\image\CV\dark\Ketron_P0C_FF2_Line1_DARK1_EOL-Dark_373KQ11GC300V8_030703111601010e0b0300001a08_20241228153651_0.raw'
-    save_path = r'G:\CameraTest\result'
-    config_path = r'G:\CameraTest\Config\config_cv.yaml'
-    import time 
-    start = time.time()
-    func(file_name, save_path, config_path)
-    print(time.time() - start)
+    file_name = r'C:\Users\wangjianan\Desktop\Innorev_Result\DPD\image'
+    save_path = r'C:\Users\wangjianan\Desktop\Innorev_Result\DPD'
+    config_path = r'G:\CameraTest\Config\config_rgb.yaml'
+    utils.process_files(file_name, func, '.raw', save_path, config_path)
+    # func(file_name, save_path, config_path)
+
     print('dsnu finished!')

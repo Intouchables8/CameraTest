@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 import os
 import sys
-ROOTPATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+ROOTPATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(str(ROOTPATH))
 from Common import utils
 from concurrent.futures import ThreadPoolExecutor
@@ -124,37 +124,41 @@ def defect_pixel_light(image, bayer_pattern, roi_size, mask_radius, thresh, csv_
  
         data = {
                     'DPL_Contrast_Threshold': str(100 * thresh),
-                    'DPL_Singlet_count': str(y_singlet_dpl),
-                    'DPL_Singlet_RBGrGbSum_Ct count': str(b_singlet_dpl + gb_singlet_dpl + gr_singlet_dpl + r_singlet_dpl),
+                    
                     'DPL_Singlet_count_R': str(r_singlet_dpl),
-                    'DPL_Singlet_count_Gb': str(gb_singlet_dpl),
-                    'DPL_Singlet_count_Gr': str(gr_singlet_dpl),
-                    'DPL_Singlet_count_G': str(gb_singlet_dpl + gr_singlet_dpl),
-                    'DPL_Singlet_count_B': str(b_singlet_dpl),
-                    
-                    'DPL_Doublet_count': str(y_doublet_dpl),
-                    'DPL_Doublet_RBGrGbSum_Ct': str(b_doublet_dpl + gb_doublet_dpl + gr_doublet_dpl + r_doublet_dpl),
                     'DPL_Doublet_count_R': str(r_doublet_dpl),
-                    'DPL_Doublet_count_Gb': str(gb_doublet_dpl),
-                    'DPL_Doublet_count_Gr': str(gr_doublet_dpl),
-                    'DPL_Doublet_count_G': str(gr_doublet_dpl + gb_doublet_dpl),
-                    'DPL_Doublet_count_B': str(b_doublet_dpl),
-                    
-                    'DPL_Triplet_count': str(y_triplet_dpl),
-                    'DPL_Triplet_RBGrGbSum_Ct': str(b_triplet_dpl + gb_triplet_dpl + gr_triplet_dpl + r_triplet_dpl),
                     'DPL_Triplet_count_R': str(r_triplet_dpl),
-                    'DPL_Triplet_count_Gb': str(gb_triplet_dpl),
-                    'DPL_Triplet_count_Gr': str(gr_triplet_dpl),
-                    'DPL_Triplet_count_G': str(gr_triplet_dpl + gb_triplet_dpl),
-                    'DPL_Triplet_count_B': str(b_triplet_dpl),
-                    
                     'DPL_R_Total_Area': str(r_total_dpl),
+                    
+                    'DPL_Singlet_count_Gr': str(gr_singlet_dpl),
+                    'DPL_Doublet_count_Gr': str(gr_doublet_dpl),
+                    'DPL_Triplet_count_Gr': str(gr_triplet_dpl),
                     'DPL_Gr_Total_Area': str(gr_total_dpl),
+                    
+                    'DPL_Singlet_count_Gb': str(gb_singlet_dpl),
+                    'DPL_Doublet_count_Gb': str(gb_doublet_dpl),
+                    'DPL_Triplet_count_Gb': str(gb_triplet_dpl),
                     'DPL_Gb_Total_Area': str(gb_total_dpl),
-                    'DPL_G_Total_Area': str(gr_total_dpl + gb_total_dpl),
+                    
+                    'DPL_Singlet_count_B': str(b_singlet_dpl),
+                    'DPL_Doublet_count_B': str(b_doublet_dpl),
+                    'DPL_Triplet_count_B': str(b_triplet_dpl),
                     'DPL_B_Total_Area': str(b_total_dpl),
-                    'DPL_Total_Area': str(y_total_dpl),
-                    'DPL_Total_Area_RBGrGbSum': str(b_total_dpl + gb_total_dpl + gr_total_dpl + r_total_dpl)
+                    
+                    'DPL_Singlet_count_G': str(gb_singlet_dpl + gr_singlet_dpl),
+                    'DPL_Doublet_count_G': str(gr_doublet_dpl + gb_doublet_dpl),
+                    'DPL_Triplet_count_G': str(gr_triplet_dpl + gb_triplet_dpl),
+                    'DPL_G_Total_Area': str(gr_total_dpl + gb_total_dpl),
+                    
+                    'DPL_Singlet_RBGrGbSum_Ct': str(b_singlet_dpl + gb_singlet_dpl + gr_singlet_dpl + r_singlet_dpl),
+                    'DPL_Doublet_RBGrGbSum_Ct': str(b_doublet_dpl + gb_doublet_dpl + gr_doublet_dpl + r_doublet_dpl),
+                    'DPL_Triplet_RBGrGbSum_Ct': str(b_triplet_dpl + gb_triplet_dpl + gr_triplet_dpl + r_triplet_dpl),
+                    'DPL_Total_Area_RBGrGbSum': str(b_total_dpl + gb_total_dpl + gr_total_dpl + r_total_dpl),
+                    
+                    'DPL_Singlet_count': str(y_singlet_dpl),
+                    'DPL_Doublet_count': str(y_doublet_dpl),
+                    'DPL_Triplet_count': str(y_triplet_dpl),
+                    'DPL_Total_Area': str(y_total_dpl),    
         }
     else:
         total_dpl, singlet_dpl, doublet_dpl, triplet_dpl = _dpl_support(image, 'Y', roi_size, thresh, mask_radius, debug_flag, save_path)
@@ -188,9 +192,9 @@ def func(file_name, save_path, config_path):
     return True
 
 if __name__ == '__main__':
-    file_name = r'G:\CameraTest\image\RGB\light.raw'
-    save_path = r'G:\CameraTest\result'
+    file_name = r'C:\Users\wangjianan\Desktop\Innorev_Result\Lightfield\images'
+    save_path = r'C:\Users\wangjianan\Desktop\Innorev_Result\Lightfield'
     config_path = r'G:\CameraTest\Config\config_rgb.yaml'
-    func(file_name, save_path, config_path)
+    utils.process_files(file_name, func, '.raw', save_path, config_path)
     
     print('dpl finished!')

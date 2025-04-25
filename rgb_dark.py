@@ -1,7 +1,7 @@
-from Project.CV import dark_noise
-from Project.CV import defect_pixel_dark
-from Project.CV import DSNU
-from Project.CV import defect_row_col_dark
+from Project.RGB import dark_noise
+from Project.RGB import defect_pixel_dark
+from Project.RGB import DSNU
+from Project.RGB import defect_row_col_dark
 from Common import utils
 import numpy as np
 
@@ -61,7 +61,7 @@ if __name__ == '__main__':
     dpd_file_name = r'G:\CameraTest\image\CV\dark\Ketron_P0C_FF2_Line1_DARK1_EOL-Dark_373KQ11GC300V8_030703111601010e0b0300001a08_20241228153651_0.raw'
     dn_file_name = None
     save_path = r'G:\CameraTest\result'
-    config_path = r'G:\CameraTest\Config\config_cv.yaml'
+    config_path = r'G:\CameraTest\Config\config_rgb.yaml'
     dark = Dark(config_path)
     dark.func(dpd_file_name, dn_file_name, save_path)
     # # utils.process_files(dpd_file_name, dark.func, '.raw', dn_file_name, save_path)

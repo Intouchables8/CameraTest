@@ -155,6 +155,7 @@ dark:
 
   dark_noise:
     image_count: 5
+    input_pattern: "Y"
     sub_black_level: false
     csv_output: true 
 

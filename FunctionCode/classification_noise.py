@@ -1,65 +1,67 @@
 import os
 import shutil
+from itertools import islice
+
 
 # # 给 ********************* Noise图像分组 ********************
 # # 对噪音图片进行五五分组
-# def chunk_it(seq, size):
-#     """将序列分为指定大小的块"""
-#     it = iter(seq)
-#     return iter(lambda: tuple(islice(it, size)), ())
+def chunk_it(seq, size):
+    """将序列分为指定大小的块"""
+    it = iter(seq)
+    return iter(lambda: tuple(islice(it, size)), ())
 
-# # 假设你的图片存储在这个路径下
-# folder_path = r'E:\Wrok\Temp\Oregon\20250314\dark raw image'
+# 假设你的图片存储在这个路径下
+folder_path = r'C:\Users\wangjianan\Desktop\Innorev_Result\Dark\imaegs'
 
-# # 读取文件夹中所有文件的名称
-# file_names = sorted([f for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))])
+# 读取文件夹中所有文件的名称
+file_names = sorted([f for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))])
 
-# # 按照每5个一组分组
-# groups = list(chunk_it(file_names, 5))
+# 按照每5个一组分组
+groups = list(chunk_it(file_names, 5))
 
-# # 输出每个分组的内容
-# for i, group in enumerate(groups, start=1):
-#     if len(str(i)) == 1:
-#         i = f'0{i}'
-#     for name in group:
-#         fileName = os.path.join(folder_path, name)
-#         tagetPath = os.path.join(folder_path, 'group', str(i))
-#         if not os.path.exists(tagetPath):
-#             os.makedirs(tagetPath)
-#         tagetName = os.path.join(tagetPath, name)
-#         shutil.copyfile(fileName,tagetName)
+# 输出每个分组的内容
+for i, group in enumerate(groups, start=1):
+    if len(str(i)) == 1:
+        i = f'0{i}'
+    for name in group:
+        fileName = os.path.join(folder_path, name)
+        tagetPath = os.path.join(folder_path, 'group', str(i))
+        if not os.path.exists(tagetPath):
+            os.makedirs(tagetPath)
+        tagetName = os.path.join(tagetPath, name)
+        shutil.copyfile(fileName,tagetName)
 
 
-# # ***************************把light图像多复制几份 **********************
-import os
-import shutil
+# # # ***************************把light图像多复制几份 **********************
+# import os
+# import shutil
 
-# 源文件夹路径
-source_folder = r'E:\Wrok\Temp\Oregon\20250409'
+# # 源文件夹路径
+# source_folder = r'E:\Wrok\Temp\Oregon\20250409'
 
-# 获取文件夹中的所有文件
-files = os.listdir(source_folder)
+# # 获取文件夹中的所有文件
+# files = os.listdir(source_folder)
 
-# 复制每个文件四次
-idx = 0
-for file in files:
-    # 构建文件的完整路径
-    source_file = os.path.join(source_folder, file)
+# # 复制每个文件四次
+# idx = 0
+# for file in files:
+#     # 构建文件的完整路径
+#     source_file = os.path.join(source_folder, file)
     
-    # 检查是否为文件（避免复制子文件夹）
-    if os.path.isfile(source_file) and file.endswith('.raw'):
-        savePath = os.path.join(source_folder, 'class', str(idx))
-        if not os.path.exists(savePath):
-            os.makedirs(savePath)
-        idx += 1
-        for i in range(0, 5):  # 复制四次
-            # 构建新文件的名称
-            new_file_name = f"{os.path.splitext(file)[0]}_{i}{os.path.splitext(file)[1]}"
-            new_file_path = os.path.join(savePath, new_file_name)
-            # 复制文件
-            shutil.copy(source_file, new_file_path)
+#     # 检查是否为文件（避免复制子文件夹）
+#     if os.path.isfile(source_file) and file.endswith('.raw'):
+#         savePath = os.path.join(source_folder, 'class', str(idx))
+#         if not os.path.exists(savePath):
+#             os.makedirs(savePath)
+#         idx += 1
+#         for i in range(0, 5):  # 复制四次
+#             # 构建新文件的名称
+#             new_file_name = f"{os.path.splitext(file)[0]}_{i}{os.path.splitext(file)[1]}"
+#             new_file_path = os.path.join(savePath, new_file_name)
+#             # 复制文件
+#             shutil.copy(source_file, new_file_path)
 
-print("复制完成！")
+# print("复制完成！")
 
 
 # ## 把五五一组的图像只保留一个*****************************

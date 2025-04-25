@@ -1,8 +1,8 @@
 light:
   image_info:
-    image_size: [1808, 2888]
+    image_size: [10640, 14192]
     crop_tblr: [0, 0, 0, 0]
-    bayer_pattern: "BGGR"  
+    bayer_pattern: "Y"  
     image_type: "RAW10"
     sub_black_level: True
     black_level: 64

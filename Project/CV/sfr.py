@@ -509,6 +509,6 @@ if __name__ == '__main__':
     save_path = r'G:\CameraTest\result'
     config_path = r'G:\CameraTest\Config\config_et.yaml'
     sfr = SFR(config_path, 1)
-    utils.process_file_or_folder(file_name, '.raw', sfr.func, save_path)
+    utils.process_files(file_name, sfr.func, '.raw', save_path)
     print('sfr finished!') 
 #endregion

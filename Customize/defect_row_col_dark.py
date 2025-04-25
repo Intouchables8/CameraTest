@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 import os
 import sys
-ROOTPATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+ROOTPATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(str(ROOTPATH))
 from Common import utils
 # from concurrent.futures import ThreadPoolExecutor
@@ -101,9 +101,9 @@ def func(file_name, save_path, config_path):
     return True
 
 if __name__ == '__main__':
-    file_name = r'G:\CameraTest\image\CV\dark\Ketron_P0C_FF2_Line1_DARK1_EOL-Dark_373KQ11GC300V8_030703111601010e0b0300001a08_20241228153651_0.raw'
-    save_path = r'G:\CameraTest\result'
-    config_path = r'G:\CameraTest\Config\config_cv.yaml'
-    func(file_name, save_path, config_path)
+    file_name = r'C:\Users\wangjianan\Desktop\Innorev_Result\DPD\image'
+    save_path = r'C:\Users\wangjianan\Desktop\Innorev_Result\DPD'
+    config_path = r'G:\CameraTest\Config\config_rgb.yaml'
+    utils.process_files(file_name, func, '.raw',save_path, config_path)
     
     print('drcd finished!')

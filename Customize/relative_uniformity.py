@@ -2,7 +2,7 @@ import numpy as np
 import os
 import cv2
 import sys
-ROOTPATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+ROOTPATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(str(ROOTPATH))
 from Common import utils
 
@@ -218,15 +218,10 @@ def func(file_name, save_path, config_path):
     return True
 
 if __name__ == '__main__':
-    file_name = r'G:\CameraTest\image\RGB\light.raw'
-    save_path = r'G:\CameraTest\result'
+    file_name = r'C:\Users\wangjianan\Desktop\Innorev_Result\Lightfield\images'
+    save_path = r'C:\Users\wangjianan\Desktop\Innorev_Result\Lightfield'
     config_path = r'G:\CameraTest\Config\config_rgb.yaml'
-    # import time 
-    # for _ in range(10):
-    #     start = time.time()
-    #     func(file_name, save_path, config_path)
-    #     print((time.time() - start))
-    func(file_name, save_path, config_path)
+    utils.process_files(file_name, func, '.raw', save_path, config_path)
     
     print('RU finished!')
     

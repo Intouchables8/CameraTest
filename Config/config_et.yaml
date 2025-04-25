@@ -1,4 +1,35 @@
 # 初始版本 20250326
+light:
+  image_info:
+    image_size: [400, 400]
+    crop_tblr: [0, 0, 0, 0]
+    bayer_pattern: "Y"  
+    image_type: "RAW10"
+    sub_black_level: True
+    black_level: 64
+  
+  blemish:
+    image_size: [400, 400]
+    down_scale_factor: 1  
+    kernel_size: [25, 25]  
+    morph: False
+    morph_kern: [0, 0]
+    poly_degree: 6
+    side_mask: 5          
+    mask_radius: 200    
+    denoise_sigma: 5       
+    threshold_m: 4
+    threshold_n: 1
+    threshold_min_max: [2, 8]   
+    min_area: 1
+    input_pattern: "Y"
+    seg_dir: 1
+    sub_black_level: True
+    black_level: 64
+    debug_flag: true
+    csv_output: true 
+    dpi: 100
+  
 sfr:
   image_info:
     image_size: [400, 400]
@@ -35,11 +66,11 @@ sfr:
     y_offset: 10
   
   customized_params:
-    points_offset_xy: [120, 120]
-    points_roi_size: [60, 60]
+    points_offset_xy: [60, 60]
+    points_roi_size: [20, 20]
     image_circle: 200
     fov_design: 100
-    fov_ratio: 0.8
+    fov_ratio: 0.4
   
   select_roi:
     roi_inex: [0,1,2,3,

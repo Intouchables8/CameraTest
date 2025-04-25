@@ -76,7 +76,7 @@ if __name__ == '__main__':
     config_path = r'G:\CameraTest\Config\config_cv.yaml'
     light = Light(config_path)
     light.func(file_name, save_path)
-    # utils.process_file_or_folder(file_name, '.raw', light.func, cu_path, save_path)
+    # utils.process_files(file_name, '.raw', light.func, cu_path, save_path)
     # raw_file_dict = find_first_raw_file(file_name)
     # for folder, file in raw_file_dict.items():
     #     light.func(file, save_path)
