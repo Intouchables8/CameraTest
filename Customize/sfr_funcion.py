@@ -93,6 +93,23 @@ def rotation_rgb(point_xy_0, point_xy_1, point_xy_2, point_xy_3, point_xy_4):
     rotation = (rotation_1 + rotation_2 + rotation_3 + rotation_4) * 0.25
     return rotation, rotation_1, rotation_2, rotation_3, rotation_4
 
+def rotation_cv(point_a, point_b, point_c, point_d, point_e):
+    '''
+    #  b     a
+    #     e 
+    #  c     d
+    Rotation_a = 45 - |arctan((Ay-Ey)/(Ax-Ex))|
+    Rotation_b = |arctan((By-Ey)/(Bx-Ex))|-45
+    Rotation_c = 45 - |arctan((Cy-Ey)/(Cx-Ex))|
+    Rotation_d = |arctan((Dy-Ey)/(Dx-Ex))-45
+    '''
+    rotation_a = np.radians(45) - np.abs(np.arctan((point_a[1] - point_e[1]) / (point_a[0] - point_e[0])))
+    rotation_b = np.abs(np.arctan((point_b[1] - point_e[1]) / (point_b[0] - point_e[0]))) - np.radians(45)
+    rotation_c = np.radians(45) - np.abs(np.arctan((point_c[1] - point_e[1]) / (point_c[0] - point_e[0])))
+    rotation_d = np.abs(np.arctan((point_d[1] - point_e[1]) / (point_d[0] - point_e[0]))) - np.radians(45)
+    rotation = (rotation_a + rotation_b + rotation_c + rotation_d) * 0.25
+    return rotation, rotation_a, rotation_b, rotation_c, rotation_d
+
 def rotation_et(points_xy):
     '''
     1     2
@@ -130,6 +147,36 @@ def fov_rgb(point_xy_1, point_xy_2, point_xy_3, point_xy_4, image_size, length_h
     FOV_D = 2 * np.arctan(length_FOV_d_real_mm/2/chart_distance) 
     return FOV_H, FOV_V, FOV_D
 
+def fov_Cv(point_a, point_b, point_c, point_d, point_g, point_h, point_j, point_k, 
+           image_circle, distD_design_percent, distV_design_percent, distH_design_percent, fov_design):
+    dist_AC = utils.calcu_distance(point_a, point_c)[0]
+    dist_BD = utils.calcu_distance(point_b, point_d)[0]
+    dist_GJ = utils.calcu_distance(point_g, point_j)[0]
+    dist_HK = utils.calcu_distance(point_h, point_k)[0]
+    dist_D = (dist_AC + dist_BD) * 0.5
+    dist_D_image_percent = dist_D / image_circle
+    dist_V_image_percent = dist_GJ / image_circle
+    dist_H_image_percent = dist_HK / image_circle
+    fov_d = fov_design * (distD_design_percent / dist_D_image_percent)
+    fov_v = fov_design * (distV_design_percent / dist_V_image_percent)
+    fov_h = fov_design * (distH_design_percent / dist_H_image_percent)
+    return fov_d, fov_v, fov_h
+ 
+def fov_et(points_xy, image_circle, fov_design, fov_ratio):
+    '''
+    1    2
+
+    3    4
+    也就是
+    5      6
+
+    17     18
+    '''
+    dist_5_18 = utils.calcu_distance(points_xy[0], points_xy[3])
+    dist_6_17 = utils.calcu_distance(points_xy[1], points_xy[2])
+    fov_d = ((4 * image_circle) / (dist_5_18 + dist_6_17)) * fov_design * fov_ratio
+    return fov_d[0]
+    
 def tilt_rgb(point_xy_1, point_xy_2, point_xy_3, point_xy_4):
     '''
     tilt_X = atan((X1-X3)/(Y3-Y1)) + atan((X4-X2)/(Y4-Y2))
@@ -139,186 +186,32 @@ def tilt_rgb(point_xy_1, point_xy_2, point_xy_3, point_xy_4):
     tilt_y = np.arctan((point_xy_1[1] - point_xy_2[1]) / (point_xy_2[0] - point_xy_1[0])) + np.arctan((point_xy_4[1] - point_xy_3[1]) / (point_xy_4[0] - point_xy_3[0])) 
     return tilt_x, tilt_y
     
-
-
-
-    
-    
-    
-    pass
+def tilt_cv(offset_x, offset_y, pixel_size, efl):
+    '''
+    Pan = atan((oc_x * pixel_size) / efl) 
+    Tile = atan((oc_y * pixel_size) / efl) 
+    '''
+    pan = np.arctan((offset_x * pixel_size) / efl)
+    tilt = np.arctan((offset_y * pixel_size) / efl) 
+    return pan, tilt
 
 def pointing_oc_et(points_xy, center_xy):
     avg_xy = points_xy.mean(axis=0)
-    offset_x = avg_xy[0] - center_xy[0]
-    offset_y = avg_xy[1] - center_xy[1]
+    oc_x, oc_y = avg_xy
+    offset_x = oc_x - center_xy[0]
+    offset_y = oc_y - center_xy[1]
     oc_r = np.sqrt(offset_x**2 + offset_y**2)
-    return offset_x, offset_y, oc_r
+    return oc_x, oc_y, offset_x, offset_y, oc_r
 
-def fov_et(points_xy, image_circle, fov_design, fov_ratio):
-    '''
-    1    2
-
-    3    4
-    也就是
-    5      6
-    
-    17     18
-    '''
-    dist_5_18 = utils.calcu_distance(points_xy[0], points_xy[3])
-    dist_6_17 = utils.calcu_distance(points_xy[1], points_xy[2])
-    fov_d = ((4 * image_circle) / (dist_5_18 + dist_6_17)) * fov_design * fov_ratio
-    return fov_d[0]
+def brightness_cv(image, roi_centers, roi_size):
+    #  B     A
+    #
+    #  C     D
+    brightness = []
+    for roi_center in roi_centers:
+        row_start, row_end, col_start, col_end = utils.get_rect(roi_center, roi_size)
+        brightness.append(image[row_start: row_end, col_start: col_end].mean())
+    return brightness
 
 def distortion_1():
     pass
-
-def brightness_1():
-    pass
-
-#region
-# def FOV(self):
-#     rad = 180 / np.pi
-#     point69 = innr_block_center_xy[13]
-#     point70 = innr_block_center_xy[14]
-#     point68 = innr_block_center_xy[16]
-#     point67 = innr_block_center_xy[15]
-#     dis6769 = np.sqrt((point67[0] - point69[0])**2 + (point67[1] - point69[1])**2)
-#     dis6870 = np.sqrt((point68[0] - point70[0])**2 + (point68[1] - point70[1])**2)
-#     DFOV = ((4 * imageCircle) / ((dis6769 + dis6870) * pixelSize)) * FOV_design * 0.75 
-
-#     fovData = {
-#         f'SFR_{chartDistance}_D_FOV': str(DFOV),
-#     }
-
-# def Rotation(self):
-#     rad = 180 / np.pi
-#     height, width = image_size
-#     point69 = innr_block_center_xy[13]
-#     point0 = OC_Center
-#     point70 = innr_block_center_xy[14]
-#     point68 = innr_block_center_xy[16]
-#     point67 = innr_block_center_xy[15]
-#     HWrad = np.arctan(height/width)
-#     rotationA = (np.arctan((point69[1] - point0[1]) / (point69[0] - point0[0])) - HWrad) * rad
-#     rotationB = (HWrad - abs(np.arctan((point70[1] - point0[1]) / (point70[0] - point0[0])))) * rad
-#     rotationC = (HWrad - abs(np.arctan((point68[1] - point0[1]) / (point68[0] - point0[0])))) * rad
-#     rotationD = (np.arctan((point67[1] - point0[1]) / (point67[0] - point0[0])) - HWrad) * rad
-#     rotation = np.array([rotationA, rotationB, rotationC, rotationD])
-#     rotationMean = np.mean(rotation)
-#     rotationMedian = np.median(rotation)
-#     rotationStd = np.std(rotation, ddof=1)
-#     rotationData = {
-#         f'SFR_{chartDistance}_Rotation_Mean': str(rotationMean),
-#         f'SFR_{chartDistance}_Rotation_Median': str(rotationMedian),
-#         f'SFR_{chartDistance}_Rotation_Std': str(rotationStd),                 
-#     }
-    
-# def PointOC(self):
-#     imgH, imgW = image_size
-#     ocX = np.mean((innr_block_center_xy[13][0], innr_block_center_xy[14][0], innr_block_center_xy[15][0], innr_block_center_xy[16][0])) 
-#     ocY = np.mean((innr_block_center_xy[13][1], innr_block_center_xy[14][1], innr_block_center_xy[15][1], innr_block_center_xy[16][1])) 
-#     offsetX = ocX - imgW / 2 + 0.5
-#     offsetY = ocY - imgH / 2 + 0.5
-#     offsetX = offsetX
-#     offsetY = offsetY
-#     offsetR = np.sqrt(offsetX**2 + offsetY**2)
-#     pointOcData = {
-#                     f'SFR_{chartDistance}_Pointing_OC_X':str(offsetX),
-#                     f'SFR_{chartDistance}_Pointing_OC_Y':str(offsetY)
-#     }
-
-# def Tilt(self):
-#     rad = 180 / np.pi
-#     tilt_X = np.arctan((offsetY * pixelSize) / EFL) * rad
-#     tilt_Y = np.arctan((offsetX * pixelSize) / EFL) * rad
-
-#     tiltData = {
-#         f'SFR_{chartDistance}_Tilt_X':str(tilt_X),
-#         f'SFR_{chartDistance}_Tilt_Y':str(tilt_Y)
-#     }
-
-# def Distortion(self):
-#     dis7879 = np.sqrt((point78[0] - point79[0])**2 + (point78[1] - point79[1])**2)
-#     dis7780 = np.sqrt((point77[0] - point80[0])**2 + (point77[1] - point80[1])**2)
-#     A = (dis7879 + dis7780) / 2
-#     B = np.sqrt((point10[0] - point12[0])**2 + (point10[1] - point12[1])**2)
-#     distortion = (A-B) / A
-
-#     point69 = innr_block_center_xy[13]
-#     point0 = OC_Center
-#     point70 = innr_block_center_xy[14]
-#     point68 = innr_block_center_xy[16]
-#     point67 = innr_block_center_xy[15]
-
-
-#     distortionData = {
-#                             f'SFR_{chartDistance}_Distortion': str(distortion * 100),
-#                             f'SFR_{chartDistance}_Point0_X': str(point0[0]),
-#                             f'SFR_{chartDistance}_Point0_Y': str(point0[1]),
-
-#                             f'SFR_{chartDistance}_Point67_X': str(point67[0]),
-#                             f'SFR_{chartDistance}_Point67_Y': str(point67[1]),
-
-#                             f'SFR_{chartDistance}_Point68_X': str(point68[0]),
-#                             f'SFR_{chartDistance}_Point68_Y': str(point68[1]),
-
-#                             f'SFR_{chartDistance}_Point69_X': str(point69[0]),
-#                             f'SFR_{chartDistance}_Point69_Y': str(point69[1]),
-
-#                             f'SFR_{chartDistance}_Point70_X': str(point70[0]),
-#                             f'SFR_{chartDistance}_Point70_Y': str(point70[1]),
-
-#                             f'SFR_{chartDistance}_Point77_X': str(point77[0]),
-#                             f'SFR_{chartDistance}_Point77_Y': str(point77[1]),
-
-#                             f'SFR_{chartDistance}_Point78_X': str(point78[0]),
-#                             f'SFR_{chartDistance}_Point78_Y': str(point78[1]),
-
-#                             f'SFR_{chartDistance}_Point79_X': str(point79[0]),
-#                             f'SFR_{chartDistance}_Point79_Y': str(point79[1]),
-
-#                             f'SFR_{chartDistance}_Point80_X': str(point80[0]),
-#                             f'SFR_{chartDistance}_Point80_Y': str(point80[1]),
-
-#     }
-#     return
-
-# def roiBrightness(self, YImahge, _len02F, roiSize):
-#     deltaX = _len02F * np.cos(np.radians(45))
-#     deltaY = _len02F * np.sin(np.radians(45))
-#     center = (round(OC_Center[0] + deltaX), round(OC_Center[1] - deltaY)) 
-#     centerRoi = YImahge[center[1] - roiSize[1] // 2 : center[1] + roiSize[1] // 2 , center[0] - roiSize[0] // 2 : center[0] + roiSize[0] // 2]
-#     cv2.rectangle(rgb, (center[0] - roiSize[1] // 2, center[1] - roiSize[1] // 2), (center[0] + roiSize[0] // 2, center[1] + roiSize[1] // 2), (0,255,255), thickness=3) 
-#     roiBrightness = centerRoi.mean()
-#     brightnessData = {
-#         f'SFR_{chartDistance}_Brightness': str(roiBrightness)
-#     }
-#     return 
-
-
-    
-# def debugImage(self):
-#     # block顶点坐标与中心坐标
-#     # I_rgb = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR) 
-    
-#     for block in block_corner__xy:
-#         for cor in block:   
-#             cv2.circle(rgb, (int(cor[0]), int(cor[1])), 4, (255, 165, 0), -1)    
-#     # for block in block_roi_center_xy:
-#     #     for center in block:   
-#     #         cv2.circle(rgb, (int(center[0]), int(center[1])), 3, (0, 255, 0), -1)  
-#     #         text = 'ROI:' + str(ROI) 
-#     #         cv2.putText(rgb, text,  (int(center[0]+3), int(center[1]+3)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 1)
-#     #         ROI = ROI + 1
-#     ROI = 1
-#     for coor in AllROI:
-#         cv2.rectangle(rgb, (coor[0], coor[1]), (coor[2], coor[3]), (0,255,255), thickness=3)     
-#         text = 'ROI:' + str(ROI) 
-#         cv2.putText(rgb, text,  (int(coor[0]+3), int(coor[1]+3)), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 255), 3)
-#         ROI += 1
-
-#     imageFileName = savePath / (deviceId +'_SFR_ROI.png')
-#     cv2.imwrite(imageFileName, rgb)                   
-#     return True
-#endregion
-

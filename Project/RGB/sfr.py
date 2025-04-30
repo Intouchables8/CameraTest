@@ -17,6 +17,7 @@ class SFR:
         locate_cfg = cfg.locate_block
         roi_cfg = cfg.select_roi
         mtf_cfg = cfg.mtf
+        
         self.cfg = cfg
         self.image_tpye = image_cfg.image_type
         self.image_size = image_cfg.image_size
@@ -467,12 +468,11 @@ class SFR:
                 for i, mtf in enumerate(mtf_data):
                     name.extend([f"ROI{i+1}_Ny_{num}" for num in self.ny_freq])
                     data.extend([str(100*value) for value in mtf])        
-            save_file_name = os.path.join(save_path, 'sfr_data.csv')
+            save_file_name = os.path.join(save_path, 'mtf_data.csv')
             utils.save_lists_to_csv(data, name, save_file_name)
         
         # 可视化
         if self.mtf_debug:
-            
             self._debug_image(all_roi_rect, mtf_data, save_path)
         return mtf_data
     
@@ -491,7 +491,7 @@ def func(self, file_name, save_path):
         image = (image >> 2).astype(np.uint8)
     
     # 定位block
-    block_roi_center_xy, block_centroid, inner_block_center_xy, points_xy = self.localte_block_california(image, save_path)
+    block_roi_center_xy, block_centroid, inner_block_center_xy, points_xy = self.localte_block_rgb(image, save_path)
     # block_roi_center_xy, block_centroid, inner_block_center_xy, points_xy = self.locate_block_cv(image, save_path)
     
     # 选择roi

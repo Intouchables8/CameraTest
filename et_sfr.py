@@ -6,7 +6,7 @@ import os
 class CalSFR:
     def __init__(self, config_path):
         self.sfr = sfr.SFR(config_path)
-        self.params = utils.load_config(config_path).sfr.customized_params
+        self.params = self.sfr.cfg.customized_params
         
     
     def func(self, file_name, save_path):
@@ -32,7 +32,7 @@ class CalSFR:
         
         # oc
         center_xy = [image.shape[1] // 2, image.shape[0] // 2]
-        offset_x, offset_y, oc_r = sfr_funcion.pointing_oc_et(points_xy, center_xy)
+        _, _, offset_x, offset_y, oc_r = sfr_funcion.pointing_oc_et(points_xy, center_xy)
         
         # fov
         fov_d = sfr_funcion.fov_et(points_xy, self.params.image_circle, self.params.fov_design, self.params.fov_ratio)
@@ -46,14 +46,14 @@ class CalSFR:
         # 计算mtf
         self.sfr.calcu_mtf(image, all_roi_rect, str(save_path))
         
-        degree_2_rad = 180 / np.pi
+
         data = {
                 f'OC_Pointing_X': offset_x,
                 f'OC_Pointing_Y': offset_y,
                 f'OC_Pointing_R': oc_r,
-                f'Rotation_TL_BR': rotation_tl_br * degree_2_rad,  
-                f'Rotation_TR_BL': rotation_tr_bl * degree_2_rad,  
-                f'Rotation_Mean': rotation_mean * degree_2_rad,  
+                f'Rotation_TL_BR': np.degrees(rotation_tl_br), 
+                f'Rotation_TR_BL': np.degrees(rotation_tr_bl), 
+                f'Rotation_Mean': np.degrees(rotation_mean), 
                 f'D_FOV': fov_d,  
                 f'P9_x': points_xy[0][0],  
                 f'P9_y': points_xy[0][1],  

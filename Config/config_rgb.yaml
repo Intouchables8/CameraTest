@@ -36,7 +36,7 @@ light:
     sub_black_level: True
     input_pattern: "Y"  
     mask_radius: 1697
-    thresh: 2
+    thresh: 8
     neighbor: 0  
     min_pixel: 10
     csv_output: true 
@@ -76,7 +76,7 @@ light:
     denoise_sigma: 5       
     threshold_m: 4
     threshold_n: 1
-    threshold_min_max: [2.5, 8]   
+    threshold_min_max: [2, 8]   
     min_area: 1
     input_pattern: "Y"
     seg_dir: 1
@@ -149,6 +149,8 @@ sfr:
     csv_output: true
   
   customized_params:
+    length_h_real_mm:
+    length_v_real_mm: 
 
 dark:
   image_info:
@@ -170,7 +172,7 @@ dark:
   
   DSNU:
     roi_size: [8, 8]
-    image_count: 1
+    image_count: 5
     except_dpd: false
     csv_output: true 
     debug_flag: true
@@ -179,7 +181,7 @@ dark:
     image_count: 1
     input_pattern: "Y"
     sub_black_level: false
-    thresh: 2
+    thresh: 8
     neighbor: 0
     csv_output: true 
     debug_flag: true

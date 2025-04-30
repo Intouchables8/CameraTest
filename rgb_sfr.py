@@ -7,6 +7,8 @@ from Customize import sfr_funcion
 class CalSFR:
     def __init__(self, config_path):
         self.sfr = sfr.SFR(config_path, 3)
+        self.cfg = self.sfr.cfg.customized_params
+        
     
     def func(self, file_name, save_path, distance):
         image = utils.load_image(file_name, self.sfr.image_tpye, self.sfr.image_size, self.sfr.crop_tblr)
@@ -39,21 +41,21 @@ class CalSFR:
         point_xy_3_rotation = inner_block_center_xy[57]
         point_xy_4_rotation = inner_block_center_xy[71]
         rotation, _, _, _, _ = sfr_funcion.rotation_rgb(point_xy_0_rotation, 
-                                                                                            point_xy_1_rotation, 
-                                                                                            point_xy_2_rotation, 
-                                                                                            point_xy_3_rotation, 
-                                                                                            point_xy_4_rotation)
+                                                        point_xy_1_rotation, 
+                                                        point_xy_2_rotation, 
+                                                        point_xy_3_rotation, 
+                                                        point_xy_4_rotation)
         
         # fov
         point_xy_1_tilt = inner_block_center_xy[0]
         point_xy_2_tilt = inner_block_center_xy[12]
         point_xy_3_tilt = inner_block_center_xy[104]
         point_xy_4_tilt = inner_block_center_xy[116]
-        # fOv_h, fov_v, fov_d = sfr_funcion.fov_rgb(point_xy_1_tilt, 
-        #                                           point_xy_2_tilt, 
-        #                                           point_xy_3_tilt, 
-        #                                           point_xy_4_tilt, 
-        #                                           image_size)
+        fOv_h, fov_v, fov_d = sfr_funcion.fov_rgb(point_xy_1_tilt, 
+                                                  point_xy_2_tilt, 
+                                                  point_xy_3_tilt, 
+                                                  point_xy_4_tilt, 
+                                                  image_size)
         
         # tilt
         tilt_x, tilt_y = sfr_funcion.tilt_rgb(point_xy_1_tilt, 

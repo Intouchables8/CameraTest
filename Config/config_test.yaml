@@ -3,8 +3,8 @@ light:
     image_size: [10640, 14192]
     crop_tblr: [0, 0, 0, 0]
     bayer_pattern: "Y"  
-    image_type: "RAW10"
-    sub_black_level: True
+    image_type: "RGB"
+    sub_black_level: False
     black_level: 64
   
   relative_illumination:
@@ -65,11 +65,11 @@ light:
     debug_flag: true
 
   blemish:
-    image_size: [1808, 2888]
-    down_scale_factor: 2  
-    kernel_size: [25, 25]  
-    morph: False
-    morph_kern: [0, 0]
+    image_size: [10640, 14192]
+    down_scale_factor: 4  
+    kernel_size: [75, 75]  
+    morph: True
+    morph_kern: [15, 15]
     poly_degree: 6
     side_mask: 20          
     mask_radius: 1697    
@@ -77,14 +77,14 @@ light:
     threshold_m: 4
     threshold_n: 1
     threshold_min_max: [2, 8]   
-    min_area: 1
+    min_area: 100
     input_pattern: "Y"
     seg_dir: 1
-    sub_black_level: True
+    sub_black_level: False
     black_level: 64
     debug_flag: true
     csv_output: true 
-    dpi: 50
+    dpi: 400
   
   color_calibration:
     sub_black_level: true

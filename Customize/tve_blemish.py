@@ -135,7 +135,7 @@ class TVEBlemish:
     @staticmethod
     def _morph_operation(image, morph_kern):
         kern = np.ones(morph_kern)
-        imageMorped = cv2.morphologyEx(image, cv2.morph_OPEN, kern)
+        imageMorped = cv2.morphologyEx(image, cv2.MORPH_OPEN, kern)
         return imageMorped
 
     @staticmethod
@@ -255,7 +255,7 @@ class TVEBlemish:
         
         # ------------- morph ---------------
         if self.cfg.morph:
-            blemish_map = TVEBlemish._morph_operation(blemish_map)
+            blemish_map = TVEBlemish._morph_operation(blemish_map, self.cfg.morph_kern)
 
         # ------------- Blemish Area --------
         blemish_area, blemish_count = TVEBlemish._get_blemish_area(blemish_map, self.cfg.down_scale_factor, self.cfg.min_area)

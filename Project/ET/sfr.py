@@ -17,7 +17,7 @@ class SFR:
         locate_cfg = cfg.locate_block
         roi_cfg = cfg.select_roi
         mtf_cfg = cfg.mtf
-        
+        self.cfg = cfg
         self.image_tpye = image_cfg.image_type
         self.image_size = image_cfg.image_size
         self.crop_tblr = image_cfg.crop_tblr
