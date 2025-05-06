@@ -40,28 +40,19 @@ class CalSFR:
         point_xy_2_rotation = inner_block_center_xy[45]
         point_xy_3_rotation = inner_block_center_xy[57]
         point_xy_4_rotation = inner_block_center_xy[71]
-        rotation, _, _, _, _ = sfr_funcion.rotation_rgb(point_xy_0_rotation, 
-                                                        point_xy_1_rotation, 
-                                                        point_xy_2_rotation, 
-                                                        point_xy_3_rotation, 
-                                                        point_xy_4_rotation)
+        rotation, _, _, _, _ = sfr_funcion.rotation_rgb(point_xy_0_rotation, point_xy_1_rotation, point_xy_2_rotation, 
+                                                        point_xy_3_rotation, point_xy_4_rotation)
         
         # fov
         point_xy_1_tilt = inner_block_center_xy[0]
         point_xy_2_tilt = inner_block_center_xy[12]
         point_xy_3_tilt = inner_block_center_xy[104]
         point_xy_4_tilt = inner_block_center_xy[116]
-        fOv_h, fov_v, fov_d = sfr_funcion.fov_rgb(point_xy_1_tilt, 
-                                                  point_xy_2_tilt, 
-                                                  point_xy_3_tilt, 
-                                                  point_xy_4_tilt, 
-                                                  image_size)
+        fOv_h, fov_v, fov_d = sfr_funcion.fov_rgb(point_xy_1_tilt, point_xy_2_tilt, point_xy_3_tilt, point_xy_4_tilt, 
+                                                  image_size, self.cfg.length_h_real_mm, self.cfg.length_v_real_mm, distance)
         
         # tilt
-        tilt_x, tilt_y = sfr_funcion.tilt_rgb(point_xy_1_tilt, 
-                                              point_xy_2_tilt, 
-                                              point_xy_3_tilt, 
-                                              point_xy_4_tilt)
+        tilt_x, tilt_y = sfr_funcion.tilt_rgb(point_xy_1_tilt, point_xy_2_tilt, point_xy_3_tilt, point_xy_4_tilt)
         
         # sfr AVG
         SFR_00F_AVG = mtf_data[:4].mean()
@@ -80,7 +71,6 @@ class CalSFR:
         SFR_60F_DELTA = SFR_60F.max() - SFR_60F.min()
         SFR_80F_DELTA = SFR_80F.max() - SFR_80F.min()
         
-        degree_2_rad = 180 / np.pi
         data = {
                 f'SFR_{distance}cm_00F_Avg_A_Ny4': SFR_00F_AVG, 
                 f'SFR_{distance}cm_20F_Avg_A_Ny4': SFR_20F_AVG, 
@@ -102,7 +92,7 @@ class CalSFR:
                 f'SFR_{distance}cm_Rotation_Point_3_y': point_xy_3_rotation[1], 
                 f'SFR_{distance}cm_Rotation_Point_4_x': point_xy_4_rotation[0], 
                 f'SFR_{distance}cm_Rotation_Point_4_y': point_xy_4_rotation[1], 
-                f'SFR_{distance}cm_Rotation': rotation * degree_2_rad,
+                f'SFR_{distance}cm_Rotation': np.degrees(rotation) ,
                 
                 f'SFR_{distance}cm_Tilt_Point_1_x': point_xy_1_tilt[0],
                 f'SFR_{distance}cm_Tilt_Point_1_y': point_xy_1_tilt[1],
@@ -112,8 +102,8 @@ class CalSFR:
                 f'SFR_{distance}cm_Tilt_Point_3_y': point_xy_3_tilt[1],
                 f'SFR_{distance}cm_Tilt_Point_4_x': point_xy_4_tilt[0],
                 f'SFR_{distance}cm_Tilt_Point_4_y': point_xy_4_tilt[1],
-                f'SFR_{distance}cm_Tilt X': tilt_x * degree_2_rad,
-                f'SFR_{distance}cm_Tilt Y': tilt_y * degree_2_rad,  
+                f'SFR_{distance}cm_Tilt X': np.degrees(tilt_x),
+                f'SFR_{distance}cm_Tilt Y': np.degrees(tilt_y),  
         }
         
         device_id = utils.GlobalConfig.get_device_id()

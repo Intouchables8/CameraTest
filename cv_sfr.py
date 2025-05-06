@@ -52,14 +52,8 @@ class CalSFR:
         point_b = inner_blcok_centroid[4]
         point_c = inner_blcok_centroid[7]
         point_d = inner_blcok_centroid[6]
-        #    g
-        # h  e  k
-        #    j
         point_e = points_xy[0]
-        point_h = points_xy[1]
-        point_g = points_xy[2]
-        point_k = points_xy[3]
-        point_j = points_xy[4]
+
         # OC
         points_xy = np.array([point_a, point_b, point_c, point_d, point_e])
         oc_x, oc_y, offset_x, offset_y, oc_r = sfr_funcion.pointing_oc_et(points_xy, center_xy)
@@ -70,6 +64,13 @@ class CalSFR:
         # Tilt
         pan, tilt = sfr_funcion.tilt_cv(offset_x, offset_y, self.cfg.pixel_size, self.cfg.efl)
         
+        #    g
+        # h  e  k
+        #    j
+        point_h = points_xy[1]
+        point_g = points_xy[2]
+        point_k = points_xy[3]
+        point_j = points_xy[4]
         # FOV
         fov_d, fov_v, fov_h = sfr_funcion.fov_Cv(point_a, point_b, point_c, point_d, point_g, point_h, point_j, point_k, 
            self.cfg.image_circle, self.cfg.distD_design_percent, self.cfg.distV_design_percent, self.cfg.distH_design_percent, self.cfg.fov_design)
@@ -119,14 +120,14 @@ class CalSFR:
                 f'SFR_Pointing_X': offset_x,
                 f'SFR_Pointing_Y': offset_y,
                 
-                f'SFR_Pan': pan,
-                f'SFR_Tilt': tilt,
+                f'SFR_Pan': np.degrees(pan),
+                f'SFR_Tilt': np.degrees(tilt),
                 
-                f'SFR_Rotation_A': rotation_a,
-                f'SFR_Rotation_B': rotation_b,
-                f'SFR_Rotation_C': rotation_c,
-                f'SFR_Rotation_D': rotation_d,
-                f'SFR_Rotation_Mean': rotation_mean,
+                f'SFR_Rotation_A': np.degrees(rotation_a),
+                f'SFR_Rotation_B': np.degrees(rotation_b),
+                f'SFR_Rotation_C': np.degrees(rotation_c),
+                f'SFR_Rotation_D': np.degrees(rotation_d),
+                f'SFR_Rotation_Mean': np.degrees(rotation_mean),
                 
                 f'SFR_FOV_D': fov_d,
                 f'SFR_FOV_H': fov_h,

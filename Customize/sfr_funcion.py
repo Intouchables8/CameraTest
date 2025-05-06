@@ -101,8 +101,9 @@ def rotation_cv(point_a, point_b, point_c, point_d, point_e):
     Rotation_a = 45 - |arctan((Ay-Ey)/(Ax-Ex))|
     Rotation_b = |arctan((By-Ey)/(Bx-Ex))|-45
     Rotation_c = 45 - |arctan((Cy-Ey)/(Cx-Ex))|
-    Rotation_d = |arctan((Dy-Ey)/(Dx-Ex))-45
+    Rotation_d = |arctan((Dy-Ey)/(Dx-Ex))| -45
     '''
+    
     rotation_a = np.radians(45) - np.abs(np.arctan((point_a[1] - point_e[1]) / (point_a[0] - point_e[0])))
     rotation_b = np.abs(np.arctan((point_b[1] - point_e[1]) / (point_b[0] - point_e[0]))) - np.radians(45)
     rotation_c = np.radians(45) - np.abs(np.arctan((point_c[1] - point_e[1]) / (point_c[0] - point_e[0])))
@@ -197,7 +198,7 @@ def tilt_cv(offset_x, offset_y, pixel_size, efl):
 
 def pointing_oc_et(points_xy, center_xy):
     avg_xy = points_xy.mean(axis=0)
-    oc_x, oc_y = avg_xy
+    oc_x, oc_y = avg_xy + 0.5
     offset_x = oc_x - center_xy[0]
     offset_y = oc_y - center_xy[1]
     oc_r = np.sqrt(offset_x**2 + offset_y**2)
