@@ -1,3 +1,7 @@
+import sys
+import os
+ROOTPATH = os.path.abspath(os.path.dirname(__file__))
+sys.path.append(str(ROOTPATH))
 from Common import utils
 from Project.RGB import sfr
 import os
@@ -115,7 +119,7 @@ class CalSFR:
 if __name__ == '__main__':
     file_name = r'C:\Users\wangjianan\Desktop\Innorev_Result\SFR50'
     save_path = r'C:\Users\wangjianan\Desktop\Innorev_Result\SFR50'
-    config_path = r'G:\CameraTest\Config\config_rgb.yaml'
+    config_path = r'D:\Code\CameraTest\Config\config_rgb.yaml'
     sfr = CalSFR(config_path)
     # 035 100 050 300
     distance = '050'

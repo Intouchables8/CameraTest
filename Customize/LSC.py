@@ -26,9 +26,9 @@ def func(file_name, save_path, config_path, color_temperture):
     return True
 
 if __name__ == '__main__':
-    file_name = r'G:\CameraTest\image\RGB\light\20241221_151813__0_AS_DNPVerify_377TT04G9L0188.raw'
-    save_path = r'G:\CameraTest\result'
-    config_path = r'G:\CameraTest\Config\config_rgb.yaml'
+    file_name = r'D:\Code\CameraTest\image\RGB\light\20241221_151813__0_AS_DNPVerify_377TT04G9L0188.raw'
+    save_path = r'D:\Code\CameraTest\result'
+    config_path = r'D:\Code\CameraTest\Config\config_rgb.yaml'
     color_temperture = '2800'
     func(file_name, save_path, config_path, color_temperture)
     print('CC finished!')

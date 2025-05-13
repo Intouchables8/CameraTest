@@ -178,7 +178,7 @@ def convert_2_pyd(source_file, target_dir, encripted):
 
 
 if __name__ == '__main__':
-    source_file = r"G:\CameraTest\et_light.py"  # 替换为你的 .py 文件路径
+    source_file = r"D:\Code\CameraTest\et_light.py"  # 替换为你的 .py 文件路径
     target_dir = r"G:\Projects\ET"  # 目标文件夹
     encripted = True
     convert_2_pyd(source_file, target_dir, encripted)

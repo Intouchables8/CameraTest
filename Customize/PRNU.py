@@ -59,9 +59,9 @@ def func(file_name, save_path, config_path):
     return 
 
 if __name__ == '__main__':
-    file_name = r'G:\CameraTest\image\CV\light\Ketron_P0C_FF2_Line1_Light1_EOL-Light__030703111601010e0b0300001a08_20241229041233_0.raw'
-    save_path = r'G:\CameraTest\result'
-    config_path = r'G:\CameraTest\Config\config_cv.yaml'
+    file_name = r'D:\Code\CameraTest\image\CV\light\Ketron_P0C_FF2_Line1_Light1_EOL-Light__030703111601010e0b0300001a08_20241229041233_0.raw'
+    save_path = r'D:\Code\CameraTest\result'
+    config_path = r'D:\Code\CameraTest\Config\config_cv.yaml'
     # utils.process_files(file_name, func, '.raw', save_path, config_path)
     func(file_name, save_path, config_path)
     

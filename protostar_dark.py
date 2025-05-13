@@ -1,3 +1,7 @@
+import sys
+import os
+ROOTPATH = os.path.abspath(os.path.dirname(__file__))
+sys.path.append(str(ROOTPATH))
 from Project.RGB import dark_noise
 from Project.RGB import defect_pixel_dark
 from Project.RGB import DSNU
@@ -58,10 +62,10 @@ class Dark:
 #     return results
 
 if __name__ == '__main__':
-    dpd_file_name = r'G:\CameraTest\image\CV\dark\Ketron_P0C_FF2_Line1_DARK1_EOL-Dark_373KQ11GC300V8_030703111601010e0b0300001a08_20241228153651_0.raw'
+    dpd_file_name = r'D:\Code\CameraTest\image\CV\dark\Ketron_P0C_FF2_Line1_DARK1_EOL-Dark_373KQ11GC300V8_030703111601010e0b0300001a08_20241228153651_0.raw'
     dn_file_name = None
-    save_path = r'G:\CameraTest\result'
-    config_path = r'G:\CameraTest\Config\config_rgb.yaml'
+    save_path = r'D:\Code\CameraTest\result'
+    config_path = r'D:\Code\CameraTest\Config\config_rgb.yaml'
     dark = Dark(config_path)
     dark.func(dpd_file_name, dn_file_name, save_path)
     # # utils.process_files(dpd_file_name, dark.func, '.raw', dn_file_name, save_path)

@@ -128,7 +128,7 @@ def func(file_name, save_path, config_path):
 if __name__ == '__main__':
     file_name = r'E:\Wrok\ERS\Diamond RGB\data_algo_pack\Innorev_Result\lsc\images'
     save_path = r'E:\Wrok\ERS\Diamond RGB\data_algo_pack\Innorev_Result\lsc'
-    config_path = r'G:\CameraTest\Config\config_rgb.yaml'
+    config_path = r'D:\Code\CameraTest\Config\config_rgb.yaml'
     utils.process_files(file_name, func, '.raw', save_path, config_path)
     pass
     

@@ -98,7 +98,7 @@ def func(file_name, save_path, config_path):
 if __name__ == '__main__':
     # file_name = r'C:\Users\wangjianan\Desktop\Innorev_Result\Dark\imaegs\01\377TT04G9L000Z_Dark_0.raw'
     save_path = r'C:\Users\wangjianan\Desktop\Innorev_Result\Dark'
-    config_path = r'G:\CameraTest\Config\config_rgb.yaml'
+    config_path = r'D:\Code\CameraTest\Config\config_rgb.yaml'
     files = [r'C:\Users\wangjianan\Desktop\Innorev_Result\Dark\imaegs\01\377TT04G9L000Z_Dark_0.raw', 
             r'C:\Users\wangjianan\Desktop\Innorev_Result\Dark\imaegs\02\377TT04G9L00B4_Dark_0.raw',
             r'C:\Users\wangjianan\Desktop\Innorev_Result\Dark\imaegs\03\377TT04G9L01M7_Dark_0.raw',

@@ -38,8 +38,8 @@ def pack_algo_2_pyd(params, target_dir):
         shutil.rmtree(build_dir)  # 递归删除
 
 if __name__ == '__main__':
-    params = {'name':Project.CV.value,'light':True, 'sfr':True, 'dark':True, 'config':True, 'encrypt':True}
-    target_dir = r'G:\Projects\CV'
+    params = {'name':Project.ET.value,'light':False, 'sfr':True, 'dark':False, 'config':True, 'encrypt':True}
+    target_dir = r'D:\Code\Projects\ET'
     pack_algo_2_pyd(params, target_dir)
     
     

@@ -1,3 +1,7 @@
+import sys
+import os
+ROOTPATH = os.path.abspath(os.path.dirname(__file__))
+sys.path.append(str(ROOTPATH))
 from Common import utils
 from Project.RGB import relative_illumination
 from Project.RGB import optical_center
@@ -73,9 +77,9 @@ class Light:
 #     return results
 
 if __name__ == '__main__':
-    file_name = r'G:\CameraTest\image\RGB\light\20241221_144804__0_AS_DNPVerify_377TT04G9L01TG.raw'
+    file_name = r'D:\Code\CameraTest\image\RGB\light\20241221_144804__0_AS_DNPVerify_377TT04G9L01TG.raw'
     save_path = r'E:\Wrok\ERS\Diamond RGB\Module Images (for algo correlation)\Light (Fail)'
-    config_path = r'G:\CameraTest\Config\config_rgb.yaml'
+    config_path = r'D:\Code\CameraTest\Config\config_rgb.yaml'
     light = Light(config_path)
     # utils.process_files(file_name, light.func, '.raw', cu_path, save_path)
     # raw_file_dict = find_first_raw_file(file_name)

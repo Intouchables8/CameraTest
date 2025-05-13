@@ -286,7 +286,7 @@ class TVEBlemish:
 if __name__ == '__main__':
     file_name = r'C:\Users\wangjianan\Desktop\Innorev_Result\blemish\pass'
     save_path = r'C:\Users\wangjianan\Desktop\Innorev_Result\blemish\pass'
-    config_path = r'G:\CameraTest\Config\config_rgb.yaml'
+    config_path = r'D:\Code\CameraTest\Config\config_rgb.yaml'
     blemish = TVEBlemish(config_path)
     utils.process_files(file_name, blemish.func, '.raw', save_path)
     print('blemish finish')

@@ -1,3 +1,7 @@
+import sys
+import os
+ROOTPATH = os.path.abspath(os.path.dirname(__file__))
+sys.path.append(str(ROOTPATH))
 from Common import utils
 from Project.ET import sfr
 from Customize import sfr_funcion
@@ -68,12 +72,13 @@ class CalSFR:
         os.makedirs(save_path, exist_ok=True)
         save_file_name = os.path.join(save_path, (device_id + '.csv'))
         utils.save_dict_to_csv(data, str(save_file_name))
+        return data
         
         
 if __name__ == '__main__':
     file_name = r'E:\Wrok\ERS\Diamond ET\Module Images (for algo correlation)\Augustine (POR)\SFR Alignment\PU0_Channel1_Image0.raw'
     save_path = r'E:\Wrok\ERS\Diamond ET\Module Images (for algo correlation)\Augustine (POR)\SFR Alignment'
-    config_path = r'G:\CameraTest\Config\config_et.yaml'
+    config_path = r'D:\Code\CameraTest\Config\config_et.yaml'
     sfr = CalSFR(config_path)
     sfr.func(file_name, save_path)
     # utils.process_files(file_name, sfr.func, '.raw', save_path)

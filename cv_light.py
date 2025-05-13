@@ -1,3 +1,7 @@
+import sys
+import os
+ROOTPATH = os.path.abspath(os.path.dirname(__file__))
+sys.path.append(str(ROOTPATH))
 from Common import utils
 from Project.CV import relative_illumination
 from Project.CV import optical_center
@@ -71,9 +75,9 @@ class Light:
 #                 results[subfolder] = raw_files[0]  # 记录第一个 .raw 文件路径
 #     return results
 if __name__ == '__main__':
-    file_name = r'G:\CameraTest\image\CV\light\Ketron_P0C_FF2_Line1_Light1_EOL-Light__030703111601010e0b0300001a08_20241229041233_0.raw'
-    save_path = r'G:\CameraTest\result'
-    config_path = r'G:\CameraTest\Config\config_cv.yaml'
+    file_name = r'D:\Code\CameraTest\image\CV\light\Ketron_P0C_FF2_Line1_Light1_EOL-Light__030703111601010e0b0300001a08_20241229041233_0.raw'
+    save_path = r'D:\Code\CameraTest\result'
+    config_path = r'D:\Code\CameraTest\Config\config_cv.yaml'
     light = Light(config_path)
     light.func(file_name, save_path)
     # utils.process_files(file_name, '.raw', light.func, cu_path, save_path)

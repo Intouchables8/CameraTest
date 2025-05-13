@@ -504,9 +504,9 @@ def func(self, file_name, save_path):
         
         
 if __name__ == '__main__':
-    file_name = r'G:\CameraTest\image\ET\sfr.raw'
-    save_path = r'G:\CameraTest\result'
-    config_path = r'G:\CameraTest\Config\config_et.yaml'
+    file_name = r'D:\Code\CameraTest\image\ET\sfr.raw'
+    save_path = r'D:\Code\CameraTest\result'
+    config_path = r'D:\Code\CameraTest\Config\config_et.yaml'
     sfr = SFR(config_path, 1)
     utils.process_files(file_name, sfr.func, '.raw', save_path)
     print('sfr finished!') 

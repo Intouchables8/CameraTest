@@ -1,3 +1,7 @@
+import sys
+import os
+ROOTPATH = os.path.abspath(os.path.dirname(__file__))
+sys.path.append(str(ROOTPATH))
 from Common import utils
 from Project.CV import sfr
 from Customize import sfr_funcion
@@ -155,8 +159,8 @@ def find_first_raw_file(root_folder):
     
 if __name__ == '__main__':
     file_name = r'E:\Wrok\ERS\Diamond CV\Module Images'
-    save_path = r'G:\CameraTest\result'
-    config_path = r'G:\CameraTest\Config\config_cv.yaml'
+    save_path = r'D:\Code\CameraTest\result'
+    config_path = r'D:\Code\CameraTest\Config\config_cv.yaml'
     sfr = CalSFR(config_path)
     # sfr.func(file_name, save_path)
     raw_file_dict = find_first_raw_file(file_name)

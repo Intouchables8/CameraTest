@@ -5,10 +5,10 @@ from pybind11.setup_helpers import Pybind11Extension, build_ext
 import numpy as np
 import sys
 
-# file_name = r"G:\CameraTest\C++\C_support_pyd\C_support_pyd\module.cpp"
+# file_name = r"D:\Code\CameraTest\C++\C_support_pyd\C_support_pyd\module.cpp"
 # module_name = "edge_median_filter"
 
-file_name = r"G:\CameraTest\C++\C_support_pyd\ciede2000\ciede2000.cpp"
+file_name = r"D:\Code\CameraTest\C++\C_support_pyd\ciede2000\ciede2000.cpp"
 module_name = "ciede2000"
 
 # OpenMP 支持设置

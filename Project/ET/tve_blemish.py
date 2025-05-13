@@ -286,7 +286,7 @@ class TVEBlemish:
 if __name__ == '__main__':
     file_name = r'E:\Wrok\ERS\Diamond ET\Module Images (for algo correlation)\Augustine (POR)\Blemish (Passing)\10f10c010b19b219c60004054100400100000000_082031.raw'
     save_path = r'E:\Wrok\ERS\Diamond ET\Module Images (for algo correlation)\Augustine (POR)\Blemish (Passing)'
-    config_path = r'G:\CameraTest\Config\config_et.yaml'
+    config_path = r'D:\Code\CameraTest\Config\config_et.yaml'
     blemish = TVEBlemish(config_path)
     
     # utils.process_files(file_name, blemish.func,'.raw', save_path)

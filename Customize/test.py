@@ -254,7 +254,7 @@ class TVEBlemish:
 if __name__ == '__main__':
     file_name = r'E:\Wrok\Temp\20250424\limit_mura\Main_W127_1.bmp'
     save_path = r'E:\Wrok\Temp\20250424\limit_mura'
-    config_path = r'G:\CameraTest\Config\config_test.yaml'
+    config_path = r'D:\Code\CameraTest\Config\config_test.yaml'
     blemish = TVEBlemish(config_path)
     blemish.func(file_name, save_path)
     # utils.process_files(file_name, blemish.func, '.raw', save_path)

@@ -186,6 +186,6 @@ def func(file_name, save_path, config_path):
 if __name__ == '__main__':
     file_name = r'C:\Users\wangjianan\Desktop\Innorev_Result\DPD\image'
     save_path = r'C:\Users\wangjianan\Desktop\Innorev_Result\DPD'
-    config_path = r'G:\CameraTest\Config\config_rgb.yaml'
+    config_path = r'D:\Code\CameraTest\Config\config_rgb.yaml'
     utils.process_files(file_name, func, '.raw',save_path, config_path)
     print('dpd finished!')
